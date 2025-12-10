@@ -72,7 +72,6 @@ class BillListSerializer(serializers.ModelSerializer):
 
 class MPListSerializer(serializers.ModelSerializer):
     """Simplified serializer for MP listing"""
-    party_display = serializers.CharField(source='get_party_display', read_only=True)
 
     class Meta:
         model = MP
@@ -83,7 +82,6 @@ class MPListSerializer(serializers.ModelSerializer):
             'middle_name',
             'last_name',
             'party',
-            'party_display',
             'constituency',
             'district',
             'photo',
@@ -92,7 +90,6 @@ class MPListSerializer(serializers.ModelSerializer):
 
 class MPDetailSerializer(serializers.ModelSerializer):
     """Full serializer for MP detail view"""
-    party_display = serializers.CharField(source='get_party_display', read_only=True)
 
     class Meta:
         model = MP
@@ -103,7 +100,6 @@ class MPDetailSerializer(serializers.ModelSerializer):
             'middle_name',
             'last_name',
             'party',
-            'party_display',
             'constituency',
             'district',
             'phone_no',

@@ -68,15 +68,6 @@ class BillReading(models.Model):
 
 class MP(models.Model):
     """Model for Members of Parliament"""
-    PARTY_CHOICES = [
-        ('nrm', 'National Resistance Movement (NRM)'),
-        ('nup', 'National Unity Platform (NUP)'),
-        ('fdc', 'Forum for Democratic Change (FDC)'),
-        ('dp', 'Democratic Party (DP)'),
-        ('independent', 'Independent'),
-        ('other', 'Other'),
-    ]
-
     # Personal Information
     first_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=100, blank=True)
@@ -88,7 +79,7 @@ class MP(models.Model):
     email = models.EmailField(blank=True)
 
     # Political Information
-    party = models.CharField(max_length=100, choices=PARTY_CHOICES)
+    party = models.CharField(max_length=100, help_text="Political party affiliation")
     constituency = models.CharField(max_length=200)
     district = models.CharField(max_length=100)
 
