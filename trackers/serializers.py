@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Bill, BillReading
+from .models import Bill, BillReading, MP
 
 
 class BillReadingSerializer(serializers.ModelSerializer):
@@ -68,3 +68,49 @@ class BillListSerializer(serializers.ModelSerializer):
             'status_display',
             'created_at',
         ]
+
+
+class MPListSerializer(serializers.ModelSerializer):
+    """Simplified serializer for MP listing"""
+    party_display = serializers.CharField(source='get_party_display', read_only=True)
+
+    class Meta:
+        model = MP
+        fields = [
+            'id',
+            'name',
+            'first_name',
+            'middle_name',
+            'last_name',
+            'party',
+            'party_display',
+            'constituency',
+            'district',
+            'photo',
+        ]
+
+
+class MPDetailSerializer(serializers.ModelSerializer):
+    """Full serializer for MP detail view"""
+    party_display = serializers.CharField(source='get_party_display', read_only=True)
+
+    class Meta:
+        model = MP
+        fields = [
+            'id',
+            'name',
+            'first_name',
+            'middle_name',
+            'last_name',
+            'party',
+            'party_display',
+            'constituency',
+            'district',
+            'phone_no',
+            'email',
+            'photo',
+            'bio',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']

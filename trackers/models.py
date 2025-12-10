@@ -64,3 +64,56 @@ class BillReading(models.Model):
 
     def __str__(self):
         return f"{self.bill.title} - {self.get_stage_display()}"
+
+
+class MP(models.Model):
+    """Model for Members of Parliament"""
+    PARTY_CHOICES = [
+        ('nrm', 'National Resistance Movement (NRM)'),
+        ('nup', 'National Unity Platform (NUP)'),
+        ('fdc', 'Forum for Democratic Change (FDC)'),
+        ('dp', 'Democratic Party (DP)'),
+        ('independent', 'Independent'),
+        ('other', 'Other'),
+    ]
+
+    # Personal Information
+    first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100)
+    name = models.CharField(max_length=300, help_text="Full name of the MP")
+
+    # Contact Information
+    phone_no = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
+
+    # Political Information
+    party = models.CharField(max_length=100, choices=PARTY_CHOICES)
+    constituency = models.CharField(max_length=200)
+    district = models.CharField(max_length=100)
+
+    # Additional Information
+    photo = models.ImageField(upload_to='mps/', blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['last_name', 'first_name']
+        verbose_name = 'Member of Parliament'
+        verbose_name_plural = 'Members of Parliament'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        """Auto-generate full name if not provided"""
+        if not self.name:
+            name_parts = [self.first_name]
+            if self.middle_name:
+                name_parts.append(self.middle_name)
+            name_parts.append(self.last_name)
+            self.name = ' '.join(name_parts)
+        super().save(*args, **kwargs)

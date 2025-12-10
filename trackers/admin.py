@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Bill, BillReading
+from .models import Bill, BillReading, MP
 
 
 class BillReadingInline(admin.TabularInline):
@@ -44,5 +44,28 @@ class BillReadingAdmin(admin.ModelAdmin):
         }),
         ('Documents', {
             'fields': ('document', 'committee_report', 'analysis', 'mp_photo')
+        }),
+    )
+
+
+@admin.register(MP)
+class MPAdmin(admin.ModelAdmin):
+    list_display = ['name', 'party', 'constituency', 'district', 'email', 'phone_no']
+    list_filter = ['party', 'district']
+    search_fields = ['name', 'first_name', 'last_name', 'constituency', 'district', 'email']
+    ordering = ['last_name', 'first_name']
+
+    fieldsets = (
+        ('Personal Information', {
+            'fields': ('first_name', 'middle_name', 'last_name', 'name', 'photo')
+        }),
+        ('Political Information', {
+            'fields': ('party', 'constituency', 'district')
+        }),
+        ('Contact Information', {
+            'fields': ('phone_no', 'email')
+        }),
+        ('Biography', {
+            'fields': ('bio',)
         }),
     )
