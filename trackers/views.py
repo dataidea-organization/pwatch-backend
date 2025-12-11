@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Q
-from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper
-from .serializers import BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer, DebtDataSerializer, LoanSerializer, HansardSerializer, BudgetSerializer, OrderPaperSerializer
+from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
+from .serializers import BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer, DebtDataSerializer, LoanSerializer, HansardSerializer, BudgetSerializer, OrderPaperSerializer, CommitteeListSerializer, CommitteeDetailSerializer
 
 
 class BillViewSet(viewsets.ModelViewSet):
@@ -303,3 +303,29 @@ class OrderPaperViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
     ordering_fields = ['created_at', 'name']
     ordering = ['-created_at']
+
+
+class CommitteePagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class CommitteeViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Parliamentary Committees
+
+    Provides committee information including chairperson, deputy, members, and documents
+    """
+    queryset = Committee.objects.select_related('chairperson', 'deputy_chairperson').prefetch_related('members', 'documents')
+    pagination_class = CommitteePagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['title', 'description', 'chairperson__name', 'deputy_chairperson__name']
+    ordering_fields = ['title', 'created_at']
+    ordering = ['title']
+
+    def get_serializer_class(self):
+        """Use different serializers for list and detail views"""
+        if self.action == 'list':
+            return CommitteeListSerializer
+        return CommitteeDetailSerializer

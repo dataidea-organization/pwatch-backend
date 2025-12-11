@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper
+from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
 
 
 class BillReadingSerializer(serializers.ModelSerializer):
@@ -205,6 +205,69 @@ class OrderPaperSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'file',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class CommitteeDocumentSerializer(serializers.ModelSerializer):
+    """Serializer for Committee Documents"""
+
+    class Meta:
+        model = CommitteeDocument
+        fields = [
+            'id',
+            'title',
+            'description',
+            'file',
+            'document_date',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class CommitteeListSerializer(serializers.ModelSerializer):
+    """Simplified serializer for Committee listing"""
+    chairperson_name = serializers.CharField(source='chairperson.name', read_only=True)
+    deputy_chairperson_name = serializers.CharField(source='deputy_chairperson.name', read_only=True)
+    member_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Committee
+        fields = [
+            'id',
+            'title',
+            'description',
+            'chairperson_name',
+            'deputy_chairperson_name',
+            'member_count',
+            'created_at',
+            'updated_at',
+        ]
+
+    def get_member_count(self, obj):
+        return obj.members.count()
+
+
+class CommitteeDetailSerializer(serializers.ModelSerializer):
+    """Full serializer for Committee detail view"""
+    chairperson = MPListSerializer(read_only=True)
+    deputy_chairperson = MPListSerializer(read_only=True)
+    members = MPListSerializer(many=True, read_only=True)
+    documents = CommitteeDocumentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Committee
+        fields = [
+            'id',
+            'title',
+            'description',
+            'chairperson',
+            'deputy_chairperson',
+            'members',
+            'documents',
             'created_at',
             'updated_at',
         ]
