@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import XSpace, Podcast, Gallery
+from django.utils.html import format_html
+from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote
 
 
 @admin.register(XSpace)
@@ -73,4 +74,69 @@ class GalleryAdmin(admin.ModelAdmin):
             'fields': ('tags', 'featured')
         }),
     )
+
+
+class PollOptionInline(admin.TabularInline):
+    model = PollOption
+    extra = 2
+    ordering = ['order']
+
+
+@admin.register(Poll)
+class PollAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'status', 'total_votes_display', 'is_active_display', 'featured', 'created_at']
+    list_filter = ['status', 'category', 'featured', 'created_at']
+    search_fields = ['title', 'description', 'category']
+    date_hierarchy = 'created_at'
+    ordering = ['-featured', '-created_at']
+    list_editable = ['featured', 'status']
+    inlines = [PollOptionInline]
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'description', 'category')
+        }),
+        ('Settings', {
+            'fields': ('status', 'start_date', 'end_date', 'featured')
+        }),
+        ('Voting Options', {
+            'fields': ('allow_multiple_votes', 'show_results_before_voting')
+        }),
+    )
+
+    def total_votes_display(self, obj):
+        return obj.total_votes
+    total_votes_display.short_description = 'Total Votes'
+
+    def is_active_display(self, obj):
+        if obj.is_active:
+            return format_html('<span style="color: green;">●</span> Active')
+        return format_html('<span style="color: red;">●</span> Inactive')
+    is_active_display.short_description = 'Status'
+
+
+@admin.register(PollOption)
+class PollOptionAdmin(admin.ModelAdmin):
+    list_display = ['text', 'poll', 'order', 'vote_count_display', 'vote_percentage_display']
+    list_filter = ['poll', 'created_at']
+    search_fields = ['text', 'poll__title']
+    ordering = ['poll', 'order']
+
+    def vote_count_display(self, obj):
+        return obj.vote_count
+    vote_count_display.short_description = 'Votes'
+
+    def vote_percentage_display(self, obj):
+        return f"{obj.vote_percentage}%"
+    vote_percentage_display.short_description = 'Percentage'
+
+
+@admin.register(PollVote)
+class PollVoteAdmin(admin.ModelAdmin):
+    list_display = ['poll', 'option', 'ip_address', 'created_at']
+    list_filter = ['poll', 'created_at']
+    search_fields = ['poll__title', 'option__text', 'ip_address']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+    readonly_fields = ['created_at']
 

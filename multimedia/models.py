@@ -78,3 +78,149 @@ class Podcast(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Gallery(models.Model):
+    """
+    Model for Gallery Images
+    """
+    title = models.CharField(max_length=200, help_text="Title of the gallery image")
+    description = models.TextField(blank=True, help_text="Description of the image")
+    image = models.ImageField(upload_to='gallery/', help_text="Gallery image")
+    category = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Category of the image (e.g., Events, Parliament, Activities)"
+    )
+    event_date = models.DateField(null=True, blank=True, help_text="Date when the event/photograph was taken")
+    photographer = models.CharField(max_length=200, blank=True, help_text="Photographer or source")
+    tags = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text="Comma-separated list of tags"
+    )
+    featured = models.BooleanField(default=False, help_text="Whether this image should be featured")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-featured', '-event_date', '-created_at']
+        verbose_name = 'Gallery Image'
+        verbose_name_plural = 'Gallery Images'
+
+    def __str__(self):
+        return self.title
+
+
+class Poll(models.Model):
+    """
+    Model for Citizen Voice Polls
+    """
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('active', 'Active'),
+        ('closed', 'Closed'),
+    ]
+
+    title = models.CharField(max_length=300, help_text="Poll question or title")
+    description = models.TextField(blank=True, help_text="Detailed description of the poll")
+    category = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Category or topic (e.g., Legislation, Budget, Governance)"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='draft',
+        help_text="Current status of the poll"
+    )
+    start_date = models.DateTimeField(null=True, blank=True, help_text="When the poll becomes active")
+    end_date = models.DateTimeField(null=True, blank=True, help_text="When the poll closes")
+    allow_multiple_votes = models.BooleanField(default=False, help_text="Allow users to vote multiple times")
+    show_results_before_voting = models.BooleanField(default=False, help_text="Show results before user votes")
+    featured = models.BooleanField(default=False, help_text="Feature this poll on the homepage")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-featured', '-created_at']
+        verbose_name = 'Poll'
+        verbose_name_plural = 'Polls'
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def total_votes(self):
+        """Calculate total number of votes for this poll"""
+        return PollVote.objects.filter(poll=self).count()
+
+    @property
+    def is_active(self):
+        """Check if poll is currently active"""
+        if self.status != 'active':
+            return False
+        from django.utils import timezone
+        now = timezone.now()
+        if self.start_date and now < self.start_date:
+            return False
+        if self.end_date and now > self.end_date:
+            return False
+        return True
+
+
+class PollOption(models.Model):
+    """
+    Model for Poll Options/Choices
+    """
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='options')
+    text = models.CharField(max_length=500, help_text="Option text")
+    order = models.IntegerField(default=0, help_text="Display order")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+        verbose_name = 'Poll Option'
+        verbose_name_plural = 'Poll Options'
+
+    def __str__(self):
+        return f"{self.poll.title} - {self.text}"
+
+    @property
+    def vote_count(self):
+        """Get the number of votes for this option"""
+        return PollVote.objects.filter(poll=self.poll, option=self).count()
+
+    @property
+    def vote_percentage(self):
+        """Calculate percentage of votes for this option"""
+        total = self.poll.total_votes
+        if total == 0:
+            return 0
+        return round((self.vote_count / total) * 100, 1)
+
+
+class PollVote(models.Model):
+    """
+    Model to track individual votes
+    """
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='votes')
+    option = models.ForeignKey(PollOption, on_delete=models.CASCADE, related_name='votes')
+    ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="Voter's IP address")
+    session_id = models.CharField(max_length=100, blank=True, help_text="Session identifier")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Poll Vote'
+        verbose_name_plural = 'Poll Votes'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['poll', 'ip_address', 'session_id'],
+                name='unique_poll_vote'
+            )
+        ]
+
+    def __str__(self):
+        return f"Vote for {self.option.text} in {self.poll.title}"
