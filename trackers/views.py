@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Count
+from django.db.models import Count, Q
 from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper
 from .serializers import BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer, DebtDataSerializer, LoanSerializer, HansardSerializer, BudgetSerializer, OrderPaperSerializer
 
@@ -16,7 +16,7 @@ class BillViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['bill_type', 'status', 'year_introduced']
     search_fields = ['title', 'mover', 'assigned_to']
-    ordering_fields = ['created_at', 'year_introduced', 'title']
+    ordering_fields = ['created_at', 'year_introduced', 'title', 'bill_type', 'status', 'mover']
     ordering = ['-created_at']
 
     def get_serializer_class(self):
@@ -48,6 +48,35 @@ class BillViewSet(viewsets.ModelViewSet):
         bill.save()
         return Response({'shares': bill.shares})
 
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Get summary statistics for bills by status"""
+        queryset = self.get_queryset()
+        
+        # Count bills by status
+        status_counts = queryset.values('status').annotate(count=Count('id'))
+        
+        # Create a dictionary with all statuses, defaulting to 0
+        summary = {
+            '1st_reading': 0,
+            '2nd_reading': 0,
+            '3rd_reading': 0,
+            'passed': 0,
+            'assented': 0,
+            'withdrawn': 0,  # Not in model, but included for frontend
+        }
+        
+        # Update with actual counts
+        for item in status_counts:
+            status = item['status']
+            if status in summary:
+                summary[status] = item['count']
+        
+        # Also include total count
+        summary['total'] = queryset.count()
+        
+        return Response(summary)
+
 
 class BillReadingViewSet(viewsets.ModelViewSet):
     """
@@ -78,7 +107,7 @@ class MPViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['party', 'district', 'constituency']
     search_fields = ['name', 'first_name', 'last_name', 'constituency', 'district']
-    ordering_fields = ['name', 'last_name', 'district', 'created_at']
+    ordering_fields = ['name', 'last_name', 'first_name', 'party', 'district', 'constituency', 'created_at']
     ordering = ['last_name', 'first_name']
 
     def get_queryset(self):
@@ -90,12 +119,20 @@ class MPViewSet(viewsets.ModelViewSet):
         if party_param:
             parties = [p.strip() for p in party_param.split(',') if p.strip()]
             if parties:
-                qs = qs.filter(party__in=parties)
+                # Use case-insensitive matching for parties
+                party_q = Q()
+                for party in parties:
+                    party_q |= Q(party__iexact=party)
+                qs = qs.filter(party_q)
 
         if district_param:
             districts = [d.strip() for d in district_param.split(',') if d.strip()]
             if districts:
-                qs = qs.filter(district__in=districts)
+                # Use case-insensitive matching for districts
+                district_q = Q()
+                for district in districts:
+                    district_q |= Q(district__iexact=district)
+                qs = qs.filter(district_q)
 
         return qs
 
@@ -108,12 +145,14 @@ class MPViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def summary(self, request):
         """Get summary statistics for MPs"""
-        total_mps = MP.objects.count()
-        total_parties = MP.objects.values('party').distinct().count()
-        total_districts = MP.objects.values('district').distinct().count()
+        queryset = self.filter_queryset(self.get_queryset())
+
+        total_mps = queryset.count()
+        total_parties = queryset.values('party').distinct().count()
+        total_districts = queryset.values('district').distinct().count()
 
         # Get party distribution
-        parties = MP.objects.values('party').annotate(
+        parties = queryset.values('party').annotate(
             count=Count('id')
         ).order_by('-count')
 
@@ -181,7 +220,10 @@ class LoanViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def sources_summary(self, request):
         """Get loan sources summary for pie chart"""
-        sources = Loan.objects.values('source').annotate(
+        # Use the same filtering as the main queryset to respect search/filters
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        sources = queryset.values('source').annotate(
             count=Count('id')
         ).order_by('-count')
 
@@ -189,7 +231,7 @@ class LoanViewSet(viewsets.ModelViewSet):
         total = sum(item['count'] for item in sources)
         summary = []
         for item in sources:
-            source_obj = Loan.objects.filter(source=item['source']).first()
+            source_obj = queryset.filter(source=item['source']).first()
             summary.append({
                 'source': item['source'],
                 'name': source_obj.get_source_display() if source_obj else item['source'],
