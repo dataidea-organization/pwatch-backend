@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count
-from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget
-from .serializers import BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer, DebtDataSerializer, LoanSerializer, HansardSerializer, BudgetSerializer
+from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper
+from .serializers import BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer, DebtDataSerializer, LoanSerializer, HansardSerializer, BudgetSerializer, OrderPaperSerializer
 
 
 class BillViewSet(viewsets.ModelViewSet):
@@ -81,11 +81,57 @@ class MPViewSet(viewsets.ModelViewSet):
     ordering_fields = ['name', 'last_name', 'district', 'created_at']
     ordering = ['last_name', 'first_name']
 
+    def get_queryset(self):
+        """Support multi-select party/district filters via comma-separated values."""
+        qs = super().get_queryset()
+        party_param = self.request.query_params.get('party')
+        district_param = self.request.query_params.get('district')
+
+        if party_param:
+            parties = [p.strip() for p in party_param.split(',') if p.strip()]
+            if parties:
+                qs = qs.filter(party__in=parties)
+
+        if district_param:
+            districts = [d.strip() for d in district_param.split(',') if d.strip()]
+            if districts:
+                qs = qs.filter(district__in=districts)
+
+        return qs
+
     def get_serializer_class(self):
         """Use different serializers for list and detail views"""
         if self.action == 'list':
             return MPListSerializer
         return MPDetailSerializer
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Get summary statistics for MPs"""
+        total_mps = MP.objects.count()
+        total_parties = MP.objects.values('party').distinct().count()
+        total_districts = MP.objects.values('district').distinct().count()
+
+        # Get party distribution
+        parties = MP.objects.values('party').annotate(
+            count=Count('id')
+        ).order_by('-count')
+
+        # Calculate percentages
+        party_distribution = []
+        for item in parties:
+            party_distribution.append({
+                'party': item['party'],
+                'count': item['count'],
+                'percentage': round((item['count'] / total_mps * 100), 1) if total_mps > 0 else 0
+            })
+
+        return Response({
+            'total_mps': total_mps,
+            'total_parties': total_parties,
+            'total_districts': total_districts,
+            'party_distribution': party_distribution
+        })
 
 
 class DebtDataViewSet(viewsets.ModelViewSet):
@@ -196,3 +242,24 @@ class BudgetViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'financial_year']
     ordering_fields = ['financial_year', 'created_at', 'name']
     ordering = ['-financial_year', '-created_at']
+
+
+class OrderPaperPagination(PageNumberPagination):
+    page_size = 15
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class OrderPaperViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Order Papers
+
+    Provides parliamentary order papers with file downloads
+    """
+    queryset = OrderPaper.objects.all()
+    serializer_class = OrderPaperSerializer
+    pagination_class = OrderPaperPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'description']
+    ordering_fields = ['created_at', 'name']
+    ordering = ['-created_at']

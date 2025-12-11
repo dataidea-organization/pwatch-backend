@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget
+from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper
 
 
 class BillReadingSerializer(serializers.ModelSerializer):
@@ -189,6 +189,22 @@ class BudgetSerializer(serializers.ModelSerializer):
             'financial_year',
             'file',
             'budget_total_amount',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class OrderPaperSerializer(serializers.ModelSerializer):
+    """Serializer for Order Papers"""
+
+    class Meta:
+        model = OrderPaper
+        fields = [
+            'id',
+            'name',
+            'description',
+            'file',
             'created_at',
             'updated_at',
         ]

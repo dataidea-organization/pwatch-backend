@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget
+from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper
 
 
 class BillReadingInline(admin.TabularInline):
@@ -143,5 +143,18 @@ class BudgetAdmin(admin.ModelAdmin):
         }),
         ('Document', {
             'fields': ('file',)
+        }),
+    )
+
+
+@admin.register(OrderPaper)
+class OrderPaperAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description', 'file', 'created_at']
+    search_fields = ['name', 'description']
+    ordering = ['-created_at']
+
+    fieldsets = (
+        ('Order Paper Information', {
+            'fields': ('name', 'description', 'file')
         }),
     )
