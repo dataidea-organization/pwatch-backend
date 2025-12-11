@@ -292,3 +292,71 @@ class OrderPaper(models.Model):
         ordering = ['-created_at']
 
 
+class Committee(models.Model):
+    """Model for Parliamentary Committees"""
+    title = models.CharField(max_length=300, help_text="Committee name")
+    description = models.TextField(blank=True, help_text="Committee description and mandate")
+
+    # Leadership
+    chairperson = models.ForeignKey(
+        MP,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='committees_chaired',
+        help_text="Committee chairperson"
+    )
+    deputy_chairperson = models.ForeignKey(
+        MP,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='committees_deputy_chaired',
+        help_text="Committee deputy chairperson"
+    )
+
+    # Members
+    members = models.ManyToManyField(
+        MP,
+        related_name='committee_memberships',
+        blank=True,
+        help_text="Committee members"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['title']
+        verbose_name = 'Committee'
+        verbose_name_plural = 'Committees'
+
+    def __str__(self):
+        return self.title
+
+
+class CommitteeDocument(models.Model):
+    """Model for Committee Documents"""
+    committee = models.ForeignKey(
+        Committee,
+        on_delete=models.CASCADE,
+        related_name='documents',
+        help_text="Associated committee"
+    )
+    title = models.CharField(max_length=300, help_text="Document title")
+    description = models.TextField(blank=True, help_text="Document description")
+    file = models.FileField(upload_to='committee_documents/', help_text="Document file")
+    document_date = models.DateField(null=True, blank=True, help_text="Document date")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-document_date', '-created_at']
+        verbose_name = 'Committee Document'
+        verbose_name_plural = 'Committee Documents'
+
+    def __str__(self):
+        return f"{self.committee.title} - {self.title}"
+
+

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 class XSpace(models.Model):
@@ -161,7 +162,6 @@ class Poll(models.Model):
         """Check if poll is currently active"""
         if self.status != 'active':
             return False
-        from django.utils import timezone
         now = timezone.now()
         if self.start_date and now < self.start_date:
             return False
@@ -215,12 +215,6 @@ class PollVote(models.Model):
         ordering = ['-created_at']
         verbose_name = 'Poll Vote'
         verbose_name_plural = 'Poll Votes'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['poll', 'ip_address', 'session_id'],
-                name='unique_poll_vote'
-            )
-        ]
 
     def __str__(self):
         return f"Vote for {self.option.text} in {self.poll.title}"
