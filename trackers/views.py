@@ -275,13 +275,11 @@ class BudgetViewSet(viewsets.ModelViewSet):
     ViewSet for Budgets
 
     Provides national budget documents with file downloads
+    Note: Filtering and searching are handled client-side
     """
     queryset = Budget.objects.all()
     serializer_class = BudgetSerializer
     pagination_class = BudgetPagination
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['financial_year']
-    search_fields = ['name', 'financial_year']
     ordering_fields = ['financial_year', 'created_at', 'name']
     ordering = ['-financial_year', '-created_at']
 
