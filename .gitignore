@@ -1,9 +1,12 @@
+mps.json
+fix_json.py
+media
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
 *$py.class
-mps.json
-fix_json.py
+
 
 # C extensions
 *.so
