@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -154,7 +155,11 @@ else:
     MEDIA_ROOT = BASE_DIR / 'media'
 
 # Ensure media directory exists
-MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+
+# Ensure media directory exists
+if not os.path.exists(MEDIA_ROOT):
+    os.makedirs(MEDIA_ROOT)
+
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
