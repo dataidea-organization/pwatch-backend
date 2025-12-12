@@ -43,6 +43,9 @@ class BillReading(models.Model):
         ('1st_reading', '1st Reading'),
         ('2nd_reading', '2nd Reading'),
         ('3rd_reading', '3rd Reading'),
+        ('waiting_assent', 'Waiting for Assent'),
+        ('assented', 'Assented to by the President'),
+        ('withdrawn', 'Withdrawn'),
     ]
 
     bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='readings')
@@ -291,7 +294,7 @@ class OrderPaper(models.Model):
         verbose_name = 'Order Paper'
         ordering = ['-created_at']
 
-
+        
 class Committee(models.Model):
     """Model for Parliamentary Committees"""
     title = models.CharField(max_length=300, help_text="Committee name")
@@ -358,5 +361,7 @@ class CommitteeDocument(models.Model):
 
     def __str__(self):
         return f"{self.committee.title} - {self.title}"
+
+
 
 

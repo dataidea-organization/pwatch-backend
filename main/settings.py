@@ -15,6 +15,7 @@ from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+RAILWAY_ENVIRONMENT_NAME = config('RAILWAY_ENVIRONMENT_NAME', default='')
 
 
 # Quick-start development settings - unsuitable for production
@@ -133,11 +134,33 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Media files configuration
+MEDIA_URL = '/media/'
+
+# Full media URL for absolute URLs in API responses
+if RAILWAY_ENVIRONMENT_NAME:
+    # Production: Use the Railway backend URL
+    FULL_MEDIA_URL = 'https://pwatch-backend-production.up.railway.app/media/'
+else:
+    # Development: Use local backend URL
+    FULL_MEDIA_URL = 'http://localhost:8000/media/'
+
+# Railway volume configuration
+if RAILWAY_ENVIRONMENT_NAME:
+    # Railway volume is mounted at /data/media
+    MEDIA_ROOT = config('RAILWAY_VOLUME_MOUNT_PATH')
+else:
+    # Local development media directory
+    MEDIA_ROOT = BASE_DIR / 'media'
+
+# Ensure media directory exists
+MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
+    "https://pwatch-backend-production.up.railway.app",
+    "https://main.d5as01blzhon4.amplifyapp.com",
+    "https://parliamentwatch.ug",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:3001",
