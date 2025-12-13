@@ -41,7 +41,12 @@ class GlobalSearchView(APIView):
 
     def get(self, request):
         query = request.query_params.get('q', '').strip()
-        limit = int(request.query_params.get('limit', 5))  # Default 5 for dropdown, 20 for full page
+        try:
+            limit = int(request.query_params.get('limit', 5))  # Default 5 for dropdown, 20 for full page
+            # Clamp limit between 1 and 50 to prevent abuse
+            limit = max(1, min(limit, 50))
+        except (ValueError, TypeError):
+            limit = 5
 
         if not query:
             return Response({
@@ -86,12 +91,14 @@ class GlobalSearchView(APIView):
             for future in as_completed(futures):
                 category = futures[future]
                 try:
-                    category_results, category_count = future.result()
+                    category_results, category_count = future.result(timeout=5)  # 5 second timeout per category
                     results[category] = category_results
                     counts[category] = category_count
                 except Exception as e:
                     # Log error but don't fail entire search
-                    print(f"Error searching {category}: {e}")
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Error searching {category}: {e}")
                     results[category] = []
                     counts[category] = 0
 
