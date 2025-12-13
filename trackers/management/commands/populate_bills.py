@@ -22,10 +22,7 @@ class Command(BaseCommand):
             assigned_to='Committee on Defence and Internal Affairs',
             status='1st_reading',
             description='The Forensic and Scientific Analytical Services Bill, 2025 seeks to regulate forensic and scientific analytical services, establish and designate',
-            video_url='https://example.com/video1',
-            likes=55,
-            comments=10,
-            shares=23
+            video_url='https://example.com/video1'
         )
 
         # Create readings for Bill 1
@@ -52,10 +49,7 @@ class Command(BaseCommand):
             assigned_to='Committee on Budget',
             status='2nd_reading',
             description='Amendment to the Public Finance Management Act to improve accountability',
-            video_url='https://example.com/video2',
-            likes=42,
-            comments=8,
-            shares=15
+            video_url='https://example.com/video2'
         )
 
         # Create readings for Bill 2
@@ -82,10 +76,7 @@ class Command(BaseCommand):
             assigned_to='Committee on Education',
             status='assented',
             description='Bill to establish standards for quality education across Uganda',
-            video_url='https://example.com/video3',
-            likes=120,
-            comments=35,
-            shares=67
+            video_url='https://example.com/video3'
         )
 
         # Create readings for Bill 3

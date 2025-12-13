@@ -35,30 +35,6 @@ class BillViewSet(viewsets.ModelViewSet):
             return BillListSerializer
         return BillSerializer
 
-    @action(detail=True, methods=['post'])
-    def like(self, request, pk=None):
-        """Increment the like count for a bill"""
-        bill = self.get_object()
-        bill.likes += 1
-        bill.save()
-        return Response({'likes': bill.likes})
-
-    @action(detail=True, methods=['post'])
-    def comment(self, request, pk=None):
-        """Increment the comment count for a bill"""
-        bill = self.get_object()
-        bill.comments += 1
-        bill.save()
-        return Response({'comments': bill.comments})
-
-    @action(detail=True, methods=['post'])
-    def share(self, request, pk=None):
-        """Increment the share count for a bill"""
-        bill = self.get_object()
-        bill.shares += 1
-        bill.save()
-        return Response({'shares': bill.shares})
-
     @action(detail=False, methods=['get'])
     def summary(self, request):
         """Get summary statistics for bills by status"""

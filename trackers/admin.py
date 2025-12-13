@@ -24,8 +24,8 @@ class BillAdmin(admin.ModelAdmin):
         ('Description', {
             'fields': ('description',)
         }),
-        ('Video & Engagement', {
-            'fields': ('video_url', 'likes', 'comments', 'shares')
+        ('Video', {
+            'fields': ('video_url',)
         }),
     )
 

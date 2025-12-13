@@ -24,9 +24,6 @@ class Bill(models.Model):
     status = models.CharField(max_length=50, choices=BILL_STATUS_CHOICES, default='1st_reading')
     description = models.TextField(blank=True)
     video_url = models.URLField(blank=True, null=True)
-    likes = models.IntegerField(default=0)
-    comments = models.IntegerField(default=0)
-    shares = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
