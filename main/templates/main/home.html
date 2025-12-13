@@ -35,17 +35,16 @@
         }
         
         .logo {
-            width: 80px;
-            height: 80px;
-            background: #085e29;
-            border-radius: 50%;
             margin: 0 auto 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
+        }
+        
+        .logo img {
+            max-width: 200px;
+            height: auto;
+            width: 100%;
         }
         
         h1 {
@@ -107,7 +106,10 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo">PW</div>
+        <div class="logo">
+            {% load static %}
+            <img src="{% static 'main/images/pwatch-logo.png' %}" alt="Parliament Watch Uganda Logo">
+        </div>
         <h1>Parliament Watch</h1>
         <p>
             You are about to access the administrative interface for Parliament Watch Uganda.
