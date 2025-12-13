@@ -15,9 +15,9 @@ class Blog(models.Model):
         ('accountability', 'Accountability'),
     ]
 
-    title = models.CharField(max_length=500)
-    slug = models.SlugField(max_length=550, unique=True, blank=True)
-    author = models.CharField(max_length=200)
+    title = models.CharField(max_length=500, db_index=True)
+    slug = models.SlugField(max_length=550, unique=True, blank=True, db_index=True)
+    author = models.CharField(max_length=200, db_index=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='governance')
     excerpt = models.TextField(max_length=500, blank=True)
     content = models.TextField()

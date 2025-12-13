@@ -23,6 +23,7 @@ from . import views
 urlpatterns = [
     path('', views.home, name='home'),
     path('admin/', admin.site.urls),
+    path('api/search/', views.GlobalSearchView.as_view(), name='global-search'),
     path('api/trackers/', include('trackers.urls')),
     path('api/news/', include('news.urls')),
     path('api/blog/', include('blog.urls')),

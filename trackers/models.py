@@ -15,10 +15,10 @@ class Bill(models.Model):
         ('assented', 'Assented to by the President'),
     ]
 
-    title = models.CharField(max_length=500)
+    title = models.CharField(max_length=500, db_index=True)
     bill_type = models.CharField(max_length=50, choices=BILL_TYPE_CHOICES)
     year_introduced = models.DateField()
-    mover = models.CharField(max_length=200)
+    mover = models.CharField(max_length=200, db_index=True)
     assigned_to = models.CharField(max_length=200, help_text="Committee assigned to")
     status = models.CharField(max_length=50, choices=BILL_STATUS_CHOICES, default='1st_reading')
     description = models.TextField(blank=True)
@@ -75,16 +75,16 @@ class MP(models.Model):
     first_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100)
-    name = models.CharField(max_length=300, help_text="Full name of the MP")
+    name = models.CharField(max_length=300, help_text="Full name of the MP", db_index=True)
 
     # Contact Information
     phone_no = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
 
     # Political Information
-    party = models.CharField(max_length=100, help_text="Political party affiliation")
-    constituency = models.CharField(max_length=200)
-    district = models.CharField(max_length=100)
+    party = models.CharField(max_length=100, help_text="Political party affiliation", db_index=True)
+    constituency = models.CharField(max_length=200, db_index=True)
+    district = models.CharField(max_length=100, db_index=True)
 
     # Additional Information
     photo = models.ImageField(upload_to='mps/', blank=True, null=True)
@@ -213,18 +213,19 @@ class Loan(models.Model):
     ]
 
     sector = models.CharField(max_length=50, choices=SECTOR_CHOICES)
-    label = models.CharField(max_length=500, help_text="Project name or description")
+    label = models.CharField(max_length=500, help_text="Project name or description", db_index=True)
+    source = models.CharField(
+        max_length=50,
+        choices=SOURCE_CHOICES,
+        help_text="Loan source/creditor",
+        db_index=True
+    )
     approved_amount = models.DecimalField(
         max_digits=20,
         decimal_places=2,
         help_text="Approved loan amount"
     )
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD')
-    source = models.CharField(
-        max_length=50,
-        choices=SOURCE_CHOICES,
-        help_text="Loan source/creditor"
-    )
     approval_date = models.DateField(null=True, blank=True)
     description = models.TextField(blank=True)
 
@@ -243,7 +244,8 @@ class Hansard(models.Model):
     """Model for Hansards"""
     name = models.CharField(
         max_length=50,
-        help_text="Hansard name"
+        help_text="Hansard name",
+        db_index=True
     )
     date = models.DateField(null=True, blank=True)
     file = models.FileField()
@@ -261,7 +263,7 @@ class Hansard(models.Model):
 
 class Budget(models.Model):
     """Model for National Budget Documents"""
-    name = models.CharField(max_length=200, help_text="Budget document name")
+    name = models.CharField(max_length=200, help_text="Budget document name", db_index=True)
     financial_year = models.CharField(max_length=20, help_text="Financial year (e.g., 2024/2025)")
     file = models.FileField(upload_to='budgets/', help_text="Budget PDF document")
     budget_total_amount = models.DecimalField(
@@ -283,7 +285,7 @@ class Budget(models.Model):
         return f"{self.name} - {self.financial_year}"
 
 class OrderPaper(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(null=True, blank=True)
     file = models.FileField(null=True, blank=True)
 

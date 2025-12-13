@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class Explainers(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(null=True, blank=True)
     file = models.FileField(null=True, blank=True)
 
@@ -15,7 +15,7 @@ class Explainers(models.Model):
 
 
 class Report(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(null=True, blank=True)
     file = models.FileField(null=True, blank=True)
 
@@ -28,7 +28,7 @@ class Report(models.Model):
 
 
 class PartnerPublication(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(null=True, blank=True)
     file = models.FileField(null=True, blank=True)
 
@@ -41,7 +41,7 @@ class PartnerPublication(models.Model):
 
 
 class Statement(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(null=True, blank=True)
     file = models.FileField(null=True, blank=True)
 

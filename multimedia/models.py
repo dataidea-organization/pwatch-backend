@@ -6,9 +6,9 @@ class XSpace(models.Model):
     """
     Model for X (Twitter) Spaces events
     """
-    title = models.CharField(max_length=200, help_text="Title of the X Space event")
+    title = models.CharField(max_length=200, help_text="Title of the X Space event", db_index=True)
     description = models.TextField(blank=True, help_text="Description of the event")
-    host = models.CharField(max_length=200, help_text="Host or organizer of the X Space")
+    host = models.CharField(max_length=200, help_text="Host or organizer of the X Space", db_index=True)
     scheduled_date = models.DateTimeField(help_text="Scheduled date and time for the X Space")
     duration = models.IntegerField(null=True, blank=True, help_text="Duration in minutes")
     x_space_url = models.URLField(help_text="URL to the X Space event")
@@ -50,9 +50,9 @@ class Podcast(models.Model):
     """
     Model for YouTube Podcasts
     """
-    title = models.CharField(max_length=200, help_text="Title of the podcast episode")
+    title = models.CharField(max_length=200, help_text="Title of the podcast episode", db_index=True)
     description = models.TextField(blank=True, help_text="Description of the podcast episode")
-    host = models.CharField(max_length=200, help_text="Host or presenter of the podcast")
+    host = models.CharField(max_length=200, help_text="Host or presenter of the podcast", db_index=True)
     guest = models.CharField(max_length=200, blank=True, help_text="Guest speaker(s) if any")
     youtube_url = models.URLField(help_text="URL to the YouTube video")
     thumbnail = models.ImageField(upload_to='podcasts/', blank=True, null=True, help_text="Thumbnail image for the podcast")
@@ -85,7 +85,7 @@ class Gallery(models.Model):
     """
     Model for Gallery Images
     """
-    title = models.CharField(max_length=200, help_text="Title of the gallery image")
+    title = models.CharField(max_length=200, help_text="Title of the gallery image", db_index=True)
     description = models.TextField(blank=True, help_text="Description of the image")
     image = models.ImageField(upload_to='gallery/', help_text="Gallery image")
     category = models.CharField(
@@ -123,7 +123,7 @@ class Poll(models.Model):
         ('closed', 'Closed'),
     ]
 
-    title = models.CharField(max_length=300, help_text="Poll question or title")
+    title = models.CharField(max_length=300, help_text="Poll question or title", db_index=True)
     description = models.TextField(blank=True, help_text="Detailed description of the poll")
     category = models.CharField(
         max_length=100,
