@@ -1,6 +1,10 @@
 from django.contrib import admin
 from .models import HeroImage, Headline
 
+admin.site.site_header = "Parliament Watch Uganda"
+admin.site.site_title = "Parliament Watch Uganda Admin"
+admin.site.index_title = "Welcome to Parliament Watch Uganda Admin Panel"
+
 
 @admin.register(HeroImage)
 class HeroImageAdmin(admin.ModelAdmin):
