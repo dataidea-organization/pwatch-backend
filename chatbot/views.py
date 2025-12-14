@@ -31,19 +31,35 @@ def extract_text_from_pdf(file_path):
         return ""
 
 
-def get_documents_from_db():
-    """Get all documents from the database"""
-    documents = Document.objects.all()
-    result = []
-    for doc in documents:
-        if doc.file and doc.file_type == 'pdf':
-            result.append({
-                'name': doc.name,
-                'path': doc.full_path,
-                'relative_path': doc.file.name,
-                'url': doc.file_url,
-            })
-    return result
+def get_documents_from_media():
+    """Scan entire media folder and return list of PDF documents"""
+    documents = []
+    media_path = Path(settings.MEDIA_ROOT)
+    
+    # Walk through entire media folder (not just chatbot/documents)
+    for root, dirs, files in os.walk(media_path):
+        for file in files:
+            if file.lower().endswith('.pdf'):
+                file_path = Path(root) / file
+                relative_path = os.path.relpath(file_path, media_path)
+                
+                # Create a readable name from filename
+                name = file.replace('.pdf', '').replace('_', ' ').replace('-', ' ').title()
+                
+                # Build URL
+                if settings.DEBUG:
+                    url = f"{settings.MEDIA_URL}{relative_path}"
+                else:
+                    url = f"/media/{relative_path}"
+                
+                documents.append({
+                    'name': name,
+                    'path': str(file_path),
+                    'relative_path': relative_path,
+                    'url': url,
+                })
+    
+    return documents
 
 
 def chunk_text(text, chunk_size=8000, overlap=200):
@@ -93,12 +109,12 @@ class ChatbotView(APIView):
             # Initialize Claude client
             client = anthropic.Anthropic(api_key=claude_api_key)
             
-            # Get all PDF documents from database
-            documents = get_documents_from_db()
+            # Get all PDF documents from entire media folder
+            documents = get_documents_from_media()
             
             if not documents:
                 return Response(
-                    {'error': 'No documents found. Please upload documents via Django admin.'},
+                    {'error': 'No PDF documents found in media folder'},
                     status=status.HTTP_404_NOT_FOUND
                 )
             
