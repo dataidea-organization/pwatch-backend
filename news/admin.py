@@ -5,15 +5,15 @@ from .models import News
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
     list_display = ['title', 'author', 'category', 'status', 'published_date']
-    list_filter = ['status', 'category', 'published_date']
-    search_fields = ['title', 'author', 'content', 'excerpt']
+    list_filter = ['status', 'category', 'published_date', 'author']
+    search_fields = ['title', 'author__username', 'author__first_name', 'author__last_name', 'content']
     prepopulated_fields = {'slug': ('title',)}
     date_hierarchy = 'published_date'
     ordering = ['-published_date']
 
     fieldsets = (
         ('Content', {
-            'fields': ('title', 'slug', 'author', 'category', 'excerpt', 'content')
+            'fields': ('title', 'slug', 'author', 'category', 'content')
         }),
         ('Media', {
             'fields': ('image',)

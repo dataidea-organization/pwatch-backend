@@ -29,7 +29,7 @@ class BlogViewSet(viewsets.ModelViewSet):
     pagination_class = BlogPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'status', 'author']
-    search_fields = ['title', 'author', 'content', 'excerpt']
+    search_fields = ['title', 'author__username', 'author__first_name', 'author__last_name', 'content']
     ordering_fields = ['published_date', 'created_at', 'title']
     lookup_field = 'slug'
 
@@ -77,8 +77,8 @@ class HomeBlogSummaryView(APIView):
         # Using only() to fetch only needed fields
         blog_posts = Blog.objects.filter(
             status='published'
-        ).only(
-            'id', 'title', 'slug', 'author', 'category', 'excerpt', 'image', 'published_date'
+        ).select_related('author').only(
+            'id', 'title', 'slug', 'author', 'category', 'image', 'published_date'
         ).order_by('-published_date', '-created_at')[:3]
         
         # Serialize data

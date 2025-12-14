@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.text import slugify
 from ckeditor.fields import RichTextField
@@ -24,9 +25,8 @@ class News(models.Model):
 
     title = models.CharField(max_length=500, db_index=True)
     slug = models.SlugField(max_length=550, unique=True, blank=True, db_index=True)
-    author = models.CharField(max_length=200, db_index=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='news_articles', db_index=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='news_updates')
-    excerpt = models.TextField(max_length=500, blank=True)
     content = RichTextField()
     image = models.ImageField(upload_to='news/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')

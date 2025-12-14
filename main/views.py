@@ -120,9 +120,9 @@ class GlobalSearchView(APIView):
 
     def _search_news(self, query, limit):
         """Search news articles"""
-        q = Q(title__icontains=query) | Q(author__icontains=query) | Q(excerpt__icontains=query) | Q(content__icontains=query)
-        queryset = News.objects.filter(q, status='published').only(
-            'id', 'title', 'slug', 'author', 'category', 'excerpt', 'image', 'published_date'
+        q = Q(title__icontains=query) | Q(author__username__icontains=query) | Q(author__first_name__icontains=query) | Q(author__last_name__icontains=query) | Q(content__icontains=query)
+        queryset = News.objects.filter(q, status='published').select_related('author').only(
+            'id', 'title', 'slug', 'author', 'category', 'image', 'published_date'
         ).order_by('-published_date')[:limit]
         
         serializer = NewsListSerializer(queryset, many=True)
@@ -131,9 +131,9 @@ class GlobalSearchView(APIView):
 
     def _search_blogs(self, query, limit):
         """Search blog posts"""
-        q = Q(title__icontains=query) | Q(author__icontains=query) | Q(excerpt__icontains=query) | Q(content__icontains=query)
-        queryset = Blog.objects.filter(q, status='published').only(
-            'id', 'title', 'slug', 'author', 'category', 'excerpt', 'image', 'published_date'
+        q = Q(title__icontains=query) | Q(author__username__icontains=query) | Q(author__first_name__icontains=query) | Q(author__last_name__icontains=query) | Q(content__icontains=query)
+        queryset = Blog.objects.filter(q, status='published').select_related('author').only(
+            'id', 'title', 'slug', 'author', 'category', 'image', 'published_date'
         ).order_by('-published_date')[:limit]
         
         serializer = BlogListSerializer(queryset, many=True)
