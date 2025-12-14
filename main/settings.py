@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'contact',
     'multimedia',
     'trackers',
+    'chatbot',
     'rest_framework',
     'corsheaders',
 ]
