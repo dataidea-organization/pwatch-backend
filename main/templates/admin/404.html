@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Page not found" %} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; {% trans 'Page not found' %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" style="max-width: 600px; margin: 50px auto; padding: 20px; text-align: center;">
+    <div style="font-size: 120px; font-weight: bold; color: #417690; margin-bottom: 20px; line-height: 1;">
+        404
+    </div>
+    <h1 style="font-size: 24px; color: #333; margin-bottom: 15px; font-weight: normal;">
+        {% trans "Page not found" %}
+    </h1>
+    <p style="color: #666; font-size: 14px; margin-bottom: 30px; line-height: 1.5;">
+        {% trans "We're sorry, but the requested page could not be found." %}
+    </p>
+    <div style="margin-top: 30px;">
+        <a href="{% url 'admin:index' %}" style="display: inline-block; padding: 10px 20px; background-color: #417690; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 500;">
+            {% trans "Go to admin homepage" %}
+        </a>
+    </div>
+    <div style="margin-top: 15px;">
+        <a href="javascript:history.back()" style="color: #417690; text-decoration: none; font-size: 14px;">
+            {% trans "← Go back" %}
+        </a>
+    </div>
+</div>
+{% endblock %}
+
