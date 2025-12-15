@@ -182,17 +182,21 @@ class ChatbotView(APIView):
             selected_doc = document_contents[doc_index]
             
             # Generate answer using the selected document
-            answer_prompt = f"""You are a helpful assistant answering questions about parliamentary proceedings in Uganda based on the provided document.
+            answer_prompt = f"""You are a helpful assistant for Parliament Watch Uganda. You have access to a collection of parliamentary documents and can search through them to answer questions.
 
-            User Question: {query}
+            A user has asked: {query}
 
-            Document Name: {selected_doc['name']}
+            I have searched through the available parliamentary documents and found the following document that is most relevant to this question:
+
+            Document: {selected_doc['name']}
 
             Document Content:
-            {selected_doc['full_text'][:50000]}  # Limit to 50k chars for Claude
+            {selected_doc['full_text'][:50000]}
 
-            Please provide a clear, concise answer to the user's question based on the document content. Be straight to point, you don't have to say 'According to the document etc', If the answer is not in the document, say so clearly. Keep your answer under 300 words."""
-                        
+            Based on the information in this document, provide a clear and direct answer to the user's question. Answer naturally as if you are providing information from your knowledge base. Do not mention that you are reading from a document or that the user provided anything. Simply answer the question directly.
+
+            If the information needed to answer the question is not found in this document, clearly state that you could not find the specific information requested. Keep your answer concise and under 300 words."""
+
             answer_response = client.messages.create(
                 model="claude-3-haiku-20240307",  # Cheapest Claude model
                 max_tokens=500,
