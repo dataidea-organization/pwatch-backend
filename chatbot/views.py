@@ -500,7 +500,6 @@ Now answer the user's question directly:"""
             
             answer = answer_response.content[0].text.strip()
             
-            # Always include document information when a document was selected
             # Use document URL - should already be full backend URL from get_documents_from_media()
             document_url = selected_doc.get('url', '')
             if not document_url:
@@ -508,37 +507,22 @@ Now answer the user's question directly:"""
                 full_media_url = getattr(settings, 'FULL_MEDIA_URL', None)
                 if full_media_url:
                     full_media_url = full_media_url.rstrip('/')
-                    relative_path = selected_doc.get('relative_path', '')
-                    if relative_path:
-                        document_url = f"{full_media_url}/{relative_path}"
+                    document_url = f"{full_media_url}/{selected_doc['relative_path']}"
                 else:
-                    relative_path = selected_doc.get('relative_path', '')
-                    if relative_path:
-                        document_url = f"/media/{relative_path}"
-            
-            # Ensure we have document name
-            document_name = selected_doc.get('name', 'Parliamentary Document')
-            if not document_name or document_name.strip() == '':
-                # Fallback: use filename from relative_path
-                relative_path = selected_doc.get('relative_path', '')
-                if relative_path:
-                    import os
-                    document_name = os.path.basename(relative_path).replace('.pdf', '').replace('_', ' ').replace('-', ' ').title()
-                else:
-                    document_name = 'Parliamentary Document'
+                    document_url = f"/media/{selected_doc['relative_path']}"
             
             # Save assistant message
             assistant_message = ChatMessage.objects.create(
                 conversation=conversation,
                 role='assistant',
                 content=answer,
-                document_name=document_name,
+                document_name=selected_doc['name'],
                 document_url=document_url
             )
             
             response_data = {
                 'answer': answer,
-                'document_name': document_name,
+                'document_name': selected_doc['name'],
                 'document_url': document_url,
                 'confidence': 0.8,  # Simple confidence score
                 'session_id': session_id  # Return session_id for frontend to use
