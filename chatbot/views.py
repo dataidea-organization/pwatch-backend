@@ -165,6 +165,48 @@ class ChatbotView(APIView):
         
         return history
     
+    def is_greeting(self, query):
+        """Check if the query is a greeting"""
+        query_lower = query.lower().strip()
+        greetings = [
+            'hello', 'hi', 'hey', 'greetings', 'good morning', 'good afternoon',
+            'good evening', 'good day', 'howdy', 'what\'s up', 'whats up',
+            'how are you', 'how do you do', 'nice to meet you', 'pleased to meet you'
+        ]
+        
+        # Check if query is just a greeting (with optional punctuation)
+        query_clean = re.sub(r'[^\w\s]', '', query_lower)
+        words = query_clean.split()
+        
+        # If query is very short (1-3 words) and contains a greeting word
+        if len(words) <= 3:
+            for greeting in greetings:
+                if greeting in query_lower:
+                    return True
+        
+        return False
+    
+    def is_appreciation(self, query):
+        """Check if the query is an appreciation/thanks"""
+        query_lower = query.lower().strip()
+        appreciations = [
+            'thank you', 'thanks', 'thank', 'appreciate', 'appreciated', 'grateful',
+            'much appreciated', 'thanks a lot', 'thank you very much', 'thanks so much',
+            'thanks a bunch', 'i appreciate', 'i\'m grateful', 'im grateful'
+        ]
+        
+        # Check if query is just an appreciation (with optional punctuation)
+        query_clean = re.sub(r'[^\w\s]', '', query_lower)
+        words = query_clean.split()
+        
+        # If query is very short (1-4 words) and contains an appreciation word
+        if len(words) <= 4:
+            for appreciation in appreciations:
+                if appreciation in query_lower:
+                    return True
+        
+        return False
+    
     def post(self, request):
         if not HAS_DEPENDENCIES:
             return Response(
@@ -203,6 +245,74 @@ class ChatbotView(APIView):
             # Initialize Claude client
             client = anthropic.Anthropic(api_key=claude_api_key)
             
+            # Build conversation history context
+            history_context = ""
+            if history:
+                history_context = "\n\nPrevious conversation context:\n"
+                for i, pair in enumerate(history, 1):
+                    history_context += f"\nPrevious exchange {i}:\n"
+                    history_context += f"User: {pair['user']}\n"
+                    history_context += f"Assistant: {pair['assistant']}\n"
+                history_context += "\nUse this context to provide more relevant and coherent responses.\n"
+            
+            # Check if query is a pure greeting or appreciation (no question)
+            is_pure_greeting = self.is_greeting(query) and not any(word in query.lower() for word in ['what', 'when', 'where', 'who', 'why', 'how', 'which', 'tell', 'explain', 'show', 'find', 'search'])
+            is_pure_appreciation = self.is_appreciation(query) and not any(word in query.lower() for word in ['what', 'when', 'where', 'who', 'why', 'how', 'which', 'tell', 'explain', 'show', 'find', 'search'])
+            
+            # Handle pure greetings/appreciations without document search
+            if is_pure_greeting or is_pure_appreciation:
+                # Build prompt for pure greetings/appreciations
+                if is_pure_greeting:
+                    prompt = f"""You are a helpful and friendly assistant for Parliament Watch Uganda. You help users find information about parliamentary proceedings, bills, and documents.
+{history_context}
+The user has sent a greeting: {query}
+
+Respond warmly and naturally to the greeting. Introduce yourself as the Parliament Watch Uganda chatbot and offer to help with questions about the Ugandan Parliament, bills, parliamentary proceedings, or related documents. Be friendly, professional, and welcoming. Keep your response concise (under 100 words)."""
+                else:  # is_pure_appreciation
+                    prompt = f"""You are a helpful and friendly assistant for Parliament Watch Uganda.
+{history_context}
+The user has expressed appreciation: {query}
+
+Respond warmly and naturally to the appreciation. Acknowledge their thanks and offer further assistance if they have more questions about the Ugandan Parliament. Be friendly and professional. Keep your response concise (under 100 words)."""
+                
+                # Build messages array with conversation history
+                messages = []
+                for pair in history:
+                    messages.append({"role": "user", "content": pair['user']})
+                    messages.append({"role": "assistant", "content": pair['assistant']})
+                
+                messages.append({"role": "user", "content": prompt})
+                
+                answer_response = client.messages.create(
+                    model="claude-3-haiku-20240307",
+                    max_tokens=200,
+                    messages=messages
+                )
+                
+                answer = answer_response.content[0].text.strip()
+                
+                # Save assistant message
+                assistant_message = ChatMessage.objects.create(
+                    conversation=conversation,
+                    role='assistant',
+                    content=answer
+                )
+                
+                response_data = {
+                    'answer': answer,
+                    'document_name': '',
+                    'document_url': '',
+                    'confidence': 1.0,
+                    'session_id': session_id
+                }
+                
+                response_serializer = ChatbotResponseSerializer(data=response_data)
+                if response_serializer.is_valid():
+                    return Response(response_serializer.validated_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(response_data, status=status.HTTP_200_OK)
+            
+            # For questions (with or without greetings/appreciations), proceed with document search
             # Get all PDF documents from entire media folder
             documents = get_documents_from_media()
             
@@ -267,18 +377,8 @@ class ChatbotView(APIView):
             
             selected_doc = document_contents[doc_index]
             
-            # Build conversation history context
-            history_context = ""
-            if history:
-                history_context = "\n\nPrevious conversation context:\n"
-                for i, pair in enumerate(history, 1):
-                    history_context += f"\nPrevious exchange {i}:\n"
-                    history_context += f"User: {pair['user']}\n"
-                    history_context += f"Assistant: {pair['assistant']}\n"
-                history_context += "\nUse this context to provide more relevant and coherent responses.\n"
-            
-            # Generate answer using the selected document
-            answer_prompt = f"""You are a helpful assistant for Parliament Watch Uganda. You have access to a collection of parliamentary documents and can search through them to answer questions.
+            # Generate answer using the selected document with enhanced prompt
+            answer_prompt = f"""You are a helpful and friendly assistant for Parliament Watch Uganda. You have access to a collection of parliamentary documents and can search through them to answer questions.
 {history_context}
 A user has asked: {query}
 
@@ -289,9 +389,15 @@ Document: {selected_doc['name']}
 Document Content:
 {selected_doc['full_text'][:50000]}
 
-Based on the information in this document{(' and the previous conversation context' if history_context else '')}, provide a clear and direct answer to the user's question. Answer naturally as if you are providing information from your knowledge base. Do not mention that you are reading from a document or that the user provided anything. Simply answer the question directly.
-
-If the information needed to answer the question is not found in this document, clearly state that you could not find the specific information requested. Keep your answer concise and under 300 words."""
+Instructions for responding:
+- If the user's message is primarily a greeting (hello, hi, greetings, good morning/afternoon/evening, etc.), respond warmly, introduce yourself as the Parliament Watch Uganda chatbot, and offer to help with parliamentary questions. Be friendly and welcoming.
+- If the user's message is primarily an appreciation (thank you, thanks, appreciate, grateful, etc.), acknowledge it warmly and offer further assistance.
+- If the user combines a greeting or appreciation with a question, acknowledge the greeting/appreciation briefly and naturally, then answer the question based on the document content.
+- Answer naturally and conversationally as if you are providing information from your knowledge base.
+- Do not mention that you are reading from a document or that the user provided anything. Simply answer the question directly.
+- If the information needed to answer the question is not found in this document, clearly state that you could not find the specific information requested.
+- Keep your answer concise and under 300 words.
+- Always maintain a friendly, professional tone appropriate for a parliamentary information service."""
 
             # Build messages array with conversation history for Claude
             messages = []
