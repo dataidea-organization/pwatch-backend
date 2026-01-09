@@ -7,8 +7,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
-from .models import News
-from .serializers import NewsListSerializer, NewsDetailSerializer, HomeNewsSummarySerializer
+from .models import News, HotInParliament
+from .serializers import NewsListSerializer, NewsDetailSerializer, HomeNewsSummarySerializer, HotInParliamentSerializer
 
 
 class NewsPagination(PageNumberPagination):
@@ -84,6 +84,41 @@ class HomeNewsSummaryView(APIView):
         # Serialize data
         data = {
             'results': HomeNewsSummarySerializer(news_articles, many=True).data
+        }
+        
+        # Cache the response
+        cache.set(cache_key, data, 600)  # Cache for 10 minutes
+        
+        return Response(data)
+
+
+# Hot in Parliament endpoint - optimized and cached
+class HotInParliamentView(APIView):
+    """
+    Optimized endpoint for Hot in Parliament items.
+    Returns active items ordered by order and published_date.
+    Cached for 10 minutes to improve performance.
+    """
+    permission_classes = [AllowAny]
+
+    @method_decorator(cache_page(600))  # Cache for 10 minutes
+    def get(self, request):
+        cache_key = 'hot_in_parliament'
+        cached_data = cache.get(cache_key)
+        
+        if cached_data is not None:
+            return Response(cached_data)
+        
+        # Fetch active hot in parliament items with optimized query
+        hot_items = HotInParliament.objects.filter(
+            is_active=True
+        ).select_related('author').only(
+            'id', 'title', 'slug', 'author', 'content', 'image', 'link_url', 'published_date'
+        ).order_by('order', '-published_date', '-created_at')
+        
+        # Serialize data
+        data = {
+            'results': HotInParliamentSerializer(hot_items, many=True).data
         }
         
         # Cache the response

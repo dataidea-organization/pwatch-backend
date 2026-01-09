@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from main.utils import get_full_media_url
-from .models import News
+from .models import News, HotInParliament
 
 
 class NewsListSerializer(serializers.ModelSerializer):
@@ -77,6 +77,35 @@ class HomeNewsSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = ['id', 'title', 'slug', 'author', 'category', 'category_display', 'image', 'published_date']
+
+    def get_author(self, obj):
+        if obj.author:
+            return obj.author.get_full_name() or obj.author.username
+        return 'Unknown'
+
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
+        return None
+
+
+class HotInParliamentSerializer(serializers.ModelSerializer):
+    """Serializer for Hot in Parliament items"""
+    author = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = HotInParliament
+        fields = [
+            'id',
+            'title',
+            'slug',
+            'author',
+            'content',
+            'image',
+            'link_url',
+            'published_date',
+        ]
 
     def get_author(self, obj):
         if obj.author:

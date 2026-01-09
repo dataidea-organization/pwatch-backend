@@ -49,3 +49,31 @@ class News(models.Model):
     @property
     def category_display(self):
         return dict(self.CATEGORY_CHOICES).get(self.category, self.category)
+
+
+class HotInParliament(models.Model):
+    """Model for 'Hot in Parliament' items displayed on the home page"""
+    title = models.CharField(max_length=500, db_index=True)
+    slug = models.SlugField(max_length=550, unique=True, blank=True, db_index=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='hot_in_parliament', db_index=True)
+    content = RichTextField()
+    image = models.ImageField(upload_to='hot_in_parliament/', blank=True, null=True)
+    link_url = models.URLField(blank=True, null=True, help_text="Optional link to related article or external resource")
+    is_active = models.BooleanField(default=True, help_text="Whether this item should be displayed")
+    order = models.PositiveIntegerField(default=0, help_text="Order for display (lower numbers appear first)")
+    published_date = models.DateField(default=default_published_date)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Hot in Parliament'
+        verbose_name_plural = 'Hot in Parliament'
+        ordering = ['order', '-published_date', '-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
