@@ -245,7 +245,8 @@ class Hansard(models.Model):
         help_text="Hansard name",
         db_index=True
     )
-    date = models.DateField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True, help_text="Date of the Hansard session")
+    date_received = models.DateField(null=True, blank=True, help_text="Date the Hansard was received")
     file = models.FileField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -286,6 +287,7 @@ class OrderPaper(models.Model):
     name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(null=True, blank=True)
     file = models.FileField(null=True, blank=True)
+    date_received = models.DateField(null=True, blank=True, help_text="Date the order paper was received")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

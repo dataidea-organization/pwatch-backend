@@ -36,6 +36,7 @@ class ReportSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'file',
+            'date_received',
             'created_at',
             'updated_at',
         ]
@@ -58,6 +59,7 @@ class PartnerPublicationSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'file',
+            'date_received',
             'created_at',
             'updated_at',
         ]
@@ -80,6 +82,7 @@ class StatementSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'file',
+            'date_received',
             'created_at',
             'updated_at',
         ]

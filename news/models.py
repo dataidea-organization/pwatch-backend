@@ -1,7 +1,10 @@
 from django.db import models
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.text import slugify
+from django.core.cache import cache
 from ckeditor.fields import RichTextField
 
 
@@ -77,3 +80,11 @@ class HotInParliament(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# Signal to clear cache when HotInParliament items are saved or deleted
+@receiver(post_save, sender=HotInParliament)
+@receiver(post_delete, sender=HotInParliament)
+def clear_hot_in_parliament_cache(sender, instance, **kwargs):
+    """Clear the cache when Hot in Parliament items are modified"""
+    cache.delete('hot_in_parliament')

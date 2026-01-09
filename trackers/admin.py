@@ -117,15 +117,15 @@ class LoanAdmin(admin.ModelAdmin):
 
 @admin.register(Hansard)
 class HansardAdmin(admin.ModelAdmin):
-    list_display = ['name', 'date', 'file', 'created_at']
-    list_filter = ['date']
+    list_display = ['name', 'date', 'date_received', 'file', 'created_at']
+    list_filter = ['date', 'date_received']
     search_fields = ['name']
     ordering = ['-date', '-created_at']
     date_hierarchy = 'date'
 
     fieldsets = (
         ('Hansard Information', {
-            'fields': ('name', 'date', 'file')
+            'fields': ('name', 'date', 'date_received', 'file')
         }),
     )
 
@@ -149,12 +149,14 @@ class BudgetAdmin(admin.ModelAdmin):
 
 @admin.register(OrderPaper)
 class OrderPaperAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description', 'file', 'created_at']
+    list_display = ['name', 'date_received', 'file', 'created_at']
     search_fields = ['name', 'description']
-    ordering = ['-created_at']
+    list_filter = ['date_received', 'created_at']
+    ordering = ['-date_received', '-created_at']
+    date_hierarchy = 'date_received'
 
     fieldsets = (
         ('Order Paper Information', {
-            'fields': ('name', 'description', 'file')
+            'fields': ('name', 'description', 'file', 'date_received')
         }),
     )

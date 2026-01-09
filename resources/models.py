@@ -18,6 +18,7 @@ class Report(models.Model):
     name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(null=True, blank=True)
     file = models.FileField(null=True, blank=True)
+    date_received = models.DateField(null=True, blank=True, help_text="Date the report was received")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -31,6 +32,7 @@ class PartnerPublication(models.Model):
     name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(null=True, blank=True)
     file = models.FileField(null=True, blank=True)
+    date_received = models.DateField(null=True, blank=True, help_text="Date the publication was received")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -44,6 +46,7 @@ class Statement(models.Model):
     name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(null=True, blank=True)
     file = models.FileField(null=True, blank=True)
+    date_received = models.DateField(null=True, blank=True, help_text="Date the statement was received")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

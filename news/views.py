@@ -98,16 +98,20 @@ class HotInParliamentView(APIView):
     Optimized endpoint for Hot in Parliament items.
     Returns active items ordered by order and published_date.
     Cached for 10 minutes to improve performance.
+    Use ?nocache=1 to bypass cache for debugging.
     """
     permission_classes = [AllowAny]
 
-    @method_decorator(cache_page(600))  # Cache for 10 minutes
     def get(self, request):
-        cache_key = 'hot_in_parliament'
-        cached_data = cache.get(cache_key)
+        # Allow bypassing cache with ?nocache=1 parameter
+        bypass_cache = request.query_params.get('nocache') == '1'
         
-        if cached_data is not None:
-            return Response(cached_data)
+        if not bypass_cache:
+            cache_key = 'hot_in_parliament'
+            cached_data = cache.get(cache_key)
+            
+            if cached_data is not None:
+                return Response(cached_data)
         
         # Fetch active hot in parliament items with optimized query
         hot_items = HotInParliament.objects.filter(
@@ -121,7 +125,27 @@ class HotInParliamentView(APIView):
             'results': HotInParliamentSerializer(hot_items, many=True).data
         }
         
-        # Cache the response
-        cache.set(cache_key, data, 600)  # Cache for 10 minutes
+        # Cache the response (unless bypassing)
+        if not bypass_cache:
+            cache.set(cache_key, data, 600)  # Cache for 10 minutes
         
         return Response(data)
+
+
+# Hot in Parliament detail endpoint
+class HotInParliamentDetailView(APIView):
+    """
+    Endpoint to retrieve a single Hot in Parliament item by slug.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, slug):
+        try:
+            hot_item = HotInParliament.objects.get(slug=slug)
+            serializer = HotInParliamentSerializer(hot_item)
+            return Response(serializer.data)
+        except HotInParliament.DoesNotExist:
+            return Response(
+                {'error': 'Hot in Parliament item not found'},
+                status=404
+            )

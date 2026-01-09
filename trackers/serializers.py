@@ -206,6 +206,7 @@ class HansardSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'date',
+            'date_received',
             'file',
             'created_at',
             'updated_at',
@@ -252,6 +253,7 @@ class OrderPaperSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'file',
+            'date_received',
             'created_at',
             'updated_at',
         ]
