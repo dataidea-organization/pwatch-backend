@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ContactSubmission, DonationSubmission
+from .models import ContactSubmission, DonationSubmission, Feedback
 
 
 @admin.register(ContactSubmission)
