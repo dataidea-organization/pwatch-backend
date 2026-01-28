@@ -1,0 +1,125 @@
+/* CKEditor Dark Mode Support */
+/* Automatically adjusts based on user's system/browser dark mode preference */
+
+/* Light mode (default) */
+:root {
+    --ck-color-base-background: #ffffff;
+    --ck-color-base-border: #d1d5db;
+    --ck-color-base-text: #111827;
+    --ck-color-base-foreground: #ffffff;
+    --ck-color-focus-border: #085e29;
+    --ck-color-text: #111827;
+    --ck-color-panel-background: #ffffff;
+    --ck-color-panel-border: #d1d5db;
+    --ck-color-button-default-background: #ffffff;
+    --ck-color-button-default-hover-background: #f3f4f6;
+    --ck-color-button-default-active-background: #e5e7eb;
+    --ck-color-button-default-disabled-background: #f9fafb;
+    --ck-color-button-on-background: #085e29;
+    --ck-color-button-on-hover-background: #064920;
+    --ck-color-button-on-active-background: #064920;
+    --ck-color-button-on-text: #ffffff;
+    --ck-color-toolbar-background: #f9fafb;
+    --ck-color-toolbar-border: #e5e7eb;
+    --ck-color-input-background: #ffffff;
+    --ck-color-input-border: #d1d5db;
+    --ck-color-input-text: #111827;
+    --ck-color-list-background: #ffffff;
+    --ck-color-list-button-hover-background: #f3f4f6;
+    --ck-color-list-button-on-background: #e0f2fe;
+    --ck-color-list-button-on-text: #085e29;
+    --ck-color-dropdown-panel-background: #ffffff;
+    --ck-color-dropdown-panel-border: #d1d5db;
+    --ck-color-panel-background: #ffffff;
+    --ck-color-panel-border: #d1d5db;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ck-color-base-background: #1f2937;
+        --ck-color-base-border: #374151;
+        --ck-color-base-text: #f9fafb;
+        --ck-color-base-foreground: #1f2937;
+        --ck-color-focus-border: #10b981;
+        --ck-color-text: #f9fafb;
+        --ck-color-panel-background: #1f2937;
+        --ck-color-panel-border: #374151;
+        --ck-color-button-default-background: #374151;
+        --ck-color-button-default-hover-background: #4b5563;
+        --ck-color-button-default-active-background: #6b7280;
+        --ck-color-button-default-disabled-background: #1f2937;
+        --ck-color-button-on-background: #10b981;
+        --ck-color-button-on-hover-background: #059669;
+        --ck-color-button-on-active-background: #047857;
+        --ck-color-button-on-text: #ffffff;
+        --ck-color-toolbar-background: #111827;
+        --ck-color-toolbar-border: #374151;
+        --ck-color-input-background: #374151;
+        --ck-color-input-border: #4b5563;
+        --ck-color-input-text: #f9fafb;
+        --ck-color-list-background: #1f2937;
+        --ck-color-list-button-hover-background: #374151;
+        --ck-color-list-button-on-background: #064920;
+        --ck-color-list-button-on-text: #10b981;
+        --ck-color-dropdown-panel-background: #1f2937;
+        --ck-color-dropdown-panel-border: #374151;
+        --ck-color-panel-background: #1f2937;
+        --ck-color-panel-border: #374151;
+    }
+    
+    /* Override CKEditor's default styles for dark mode */
+    .ck.ck-editor {
+        background: var(--ck-color-base-background);
+        color: var(--ck-color-base-text);
+    }
+    
+    .ck.ck-editor__editable {
+        background: var(--ck-color-base-background);
+        color: var(--ck-color-base-text);
+        border-color: var(--ck-color-base-border);
+    }
+    
+    .ck.ck-toolbar {
+        background: var(--ck-color-toolbar-background);
+        border-color: var(--ck-color-toolbar-border);
+    }
+    
+    .ck.ck-button {
+        color: var(--ck-color-text);
+    }
+    
+    .ck.ck-button:hover:not(.ck-disabled) {
+        background: var(--ck-color-button-default-hover-background);
+    }
+    
+    .ck.ck-button.ck-on {
+        background: var(--ck-color-button-on-background);
+        color: var(--ck-color-button-on-text);
+    }
+    
+    .ck.ck-dropdown__panel {
+        background: var(--ck-color-dropdown-panel-background);
+        border-color: var(--ck-color-dropdown-panel-border);
+    }
+    
+    .ck.ck-list {
+        background: var(--ck-color-list-background);
+    }
+    
+    .ck.ck-list__item:hover {
+        background: var(--ck-color-list-button-hover-background);
+    }
+    
+    .ck.ck-list__item.ck-on {
+        background: var(--ck-color-list-button-on-background);
+        color: var(--ck-color-list-button-on-text);
+    }
+    
+    .ck.ck-input-text {
+        background: var(--ck-color-input-background);
+        border-color: var(--ck-color-input-border);
+        color: var(--ck-color-input-text);
+    }
+}
+

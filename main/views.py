@@ -1,11 +1,17 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse, Http404
+from django.contrib.admin.views.decorators import staff_member_required
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.core.cache import cache
 from django.db.models import Q
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
+import zipfile
+import tempfile
+from pathlib import Path
 
 # Import models
 from news.models import News
@@ -294,4 +300,120 @@ class GlobalSearchView(APIView):
         count = Poll.objects.filter(q, status='active').count()
         return serializer.data, count
 
+
+@staff_member_required
+def media_download_page(request):
+    """
+    Display a page listing all folders in the media directory with download options.
+    Only accessible to staff members.
+    """
+    media_root = Path(settings.MEDIA_ROOT)
+    folders = []
+    
+    if media_root.exists():
+        for item in sorted(media_root.iterdir()):
+            if item.is_dir():
+                # Calculate folder size and file count
+                total_size = 0
+                file_count = 0
+                for root, dirs, files in os.walk(item):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        try:
+                            total_size += os.path.getsize(file_path)
+                            file_count += 1
+                        except (OSError, IOError):
+                            pass
+                
+                folders.append({
+                    'name': item.name,
+                    'file_count': file_count,
+                    'size': format_file_size(total_size),
+                    'size_bytes': total_size,
+                })
+    
+    context = {
+        'folders': folders,
+        'title': 'Media Download Manager',
+    }
+    return render(request, 'admin/media_download.html', context)
+
+
+@staff_member_required
+def download_media_folder(request, folder_name):
+    """
+    Download a specific media folder as a zip file.
+    Only accessible to staff members.
+    """
+    media_root = Path(settings.MEDIA_ROOT)
+    folder_path = media_root / folder_name
+    
+    # Security check: ensure the folder exists and is within media root
+    try:
+        folder_path = folder_path.resolve()
+        media_root_resolved = media_root.resolve()
+        
+        # Check that the folder is within media root (prevent directory traversal)
+        if not str(folder_path).startswith(str(media_root_resolved)):
+            raise Http404("Folder not found")
+        
+        if not folder_path.exists() or not folder_path.is_dir():
+            raise Http404("Folder not found")
+    except (ValueError, RuntimeError):
+        raise Http404("Invalid folder path")
+    
+    # Create a temporary zip file
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
+    temp_file.close()
+    
+    try:
+        # Create the zip file
+        with zipfile.ZipFile(temp_file.name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(folder_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    # Calculate archive name (relative path from folder)
+                    arcname = os.path.relpath(file_path, folder_path)
+                    try:
+                        zipf.write(file_path, arcname)
+                    except (OSError, IOError):
+                        # Skip files that can't be read
+                        pass
+        
+        # Send the file
+        response = FileResponse(
+            open(temp_file.name, 'rb'),
+            content_type='application/zip'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{folder_name}.zip"'
+        
+        # Clean up temp file after response is sent
+        # Note: FileResponse will close the file, but we need to delete it
+        # We'll use a cleanup approach
+        response.temp_file_path = temp_file.name
+        
+        return response
+    except Exception as e:
+        # Clean up on error
+        if os.path.exists(temp_file.name):
+            os.unlink(temp_file.name)
+        raise Http404(f"Error creating zip file: {str(e)}")
+
+
+def format_file_size(size_bytes):
+    """Format file size in human-readable format."""
+    if size_bytes == 0:
+        return "0 B"
+    
+    units = ['B', 'KB', 'MB', 'GB', 'TB']
+    unit_index = 0
+    size = float(size_bytes)
+    
+    while size >= 1024 and unit_index < len(units) - 1:
+        size /= 1024
+        unit_index += 1
+    
+    if unit_index == 0:
+        return f"{int(size)} {units[unit_index]}"
+    return f"{size:.2f} {units[unit_index]}"
 

@@ -1,0 +1,77 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header }}</a></h1>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>{{ title }}</h1>
+    
+    <p style="margin-bottom: 20px; color: #666;">
+        Download media folders as ZIP files. Each folder contains uploaded files for the respective content type.
+    </p>
+    
+    {% if folders %}
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
+                <th style="padding: 12px 15px; text-align: left; font-weight: bold;">Folder Name</th>
+                <th style="padding: 12px 15px; text-align: right; font-weight: bold;">Files</th>
+                <th style="padding: 12px 15px; text-align: right; font-weight: bold;">Size</th>
+                <th style="padding: 12px 15px; text-align: center; font-weight: bold;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for folder in folders %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px 15px;">
+                    <strong>{{ folder.name }}</strong>
+                </td>
+                <td style="padding: 12px 15px; text-align: right; color: #666;">
+                    {{ folder.file_count }} file{% if folder.file_count != 1 %}s{% endif %}
+                </td>
+                <td style="padding: 12px 15px; text-align: right; color: #666;">
+                    {{ folder.size }}
+                </td>
+                <td style="padding: 12px 15px; text-align: center;">
+                    {% if folder.file_count > 0 %}
+                    <a href="{% url 'download_media_folder' folder.name %}" 
+                       class="button" 
+                       style="display: inline-block; padding: 8px 16px; background-color: #417690; color: white; text-decoration: none; border-radius: 4px; font-size: 13px;">
+                        Download ZIP
+                    </a>
+                    {% else %}
+                    <span style="color: #999; font-style: italic;">Empty folder</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="padding: 40px; text-align: center; background-color: #f9f9f9; border-radius: 8px; margin-top: 20px;">
+        <p style="color: #666; font-size: 16px; margin: 0;">
+            No media folders found.
+        </p>
+    </div>
+    {% endif %}
+    
+    <div style="margin-top: 30px; padding: 15px; background-color: #fffbf0; border: 1px solid #f0e0b0; border-radius: 4px;">
+        <p style="margin: 0; color: #665500; font-size: 13px;">
+            <strong>Note:</strong> Large folders may take some time to compress and download. 
+            Please be patient during the download process.
+        </p>
+    </div>
+</div>
+{% endblock %}
