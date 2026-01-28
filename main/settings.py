@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ckeditor',
+    'ckeditor_uploader',
     'accounts',
     'home',
     'blog',
@@ -162,11 +163,13 @@ else:
     MEDIA_ROOT = BASE_DIR / 'media'
 
 # Ensure media directory exists
-
-# Ensure media directory exists
 if not os.path.exists(MEDIA_ROOT):
     os.makedirs(MEDIA_ROOT)
 
+# CKEditor upload path
+CKEDITOR_UPLOAD_PATH = 'ckeditor/'
+CKEDITOR_IMAGE_BACKEND = 'pillow'
+CKEDITOR_ALLOW_NONIMAGE_FILES = True  # Allow audio/video files
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
@@ -216,6 +219,9 @@ CKEDITOR_CONFIGS = {
             ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'],
             ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
             ['Link', 'Unlink'],
+            ['Image', 'Flash'],
+            ['Table', 'HorizontalRule', 'SpecialChar'],
+            ['Iframe'],
             ['RemoveFormat', 'Source'],
         ],
         'stylesSet': [
@@ -228,5 +234,9 @@ CKEDITOR_CONFIGS = {
         'format_tags': 'p;h1;h2;h3;h4;pre',
         'removePlugins': 'elementspath',
         'resize_enabled': True,
+        'filebrowserUploadUrl': '/ckeditor/upload/',
+        'filebrowserBrowseUrl': '/ckeditor/browse/',
+        'filebrowserImageUploadUrl': '/ckeditor/upload/',
+        'filebrowserImageBrowseUrl': '/ckeditor/browse/',
     },
 }

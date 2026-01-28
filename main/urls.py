@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin/media-download/', views.media_download_page, name='media_download_page'),
     path('admin/media-download/<str:folder_name>/', views.download_media_folder, name='download_media_folder'),
     path('admin/', admin.site.urls),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
     path('api/search/', views.GlobalSearchView.as_view(), name='global-search'),
     path('api/trackers/', include('trackers.urls')),
     path('api/news/', include('news.urls')),
