@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from main.utils import get_full_media_url
+from main.utils import get_full_media_url, process_content_images
 from .models import News, HotInParliament
 
 
@@ -38,6 +38,7 @@ class NewsDetailSerializer(serializers.ModelSerializer):
     category_display = serializers.CharField(read_only=True)
     author = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
+    content = serializers.SerializerMethodField()
 
     class Meta:
         model = News
@@ -66,6 +67,12 @@ class NewsDetailSerializer(serializers.ModelSerializer):
         if obj.image:
             return get_full_media_url(obj.image.url)
         return None
+    
+    def get_content(self, obj):
+        """Process content HTML to convert relative image URLs to absolute URLs"""
+        if obj.content:
+            return process_content_images(obj.content)
+        return obj.content
 
 
 class HomeNewsSummarySerializer(serializers.ModelSerializer):
@@ -93,6 +100,7 @@ class HotInParliamentSerializer(serializers.ModelSerializer):
     """Serializer for Hot in Parliament items"""
     author = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
+    content = serializers.SerializerMethodField()
 
     class Meta:
         model = HotInParliament
@@ -116,3 +124,9 @@ class HotInParliamentSerializer(serializers.ModelSerializer):
         if obj.image:
             return get_full_media_url(obj.image.url)
         return None
+    
+    def get_content(self, obj):
+        """Process content HTML to convert relative image URLs to absolute URLs"""
+        if obj.content:
+            return process_content_images(obj.content)
+        return obj.content

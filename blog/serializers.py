@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from main.utils import get_full_media_url
+from main.utils import get_full_media_url, process_content_images
 from .models import Blog
 
 
@@ -38,6 +38,7 @@ class BlogDetailSerializer(serializers.ModelSerializer):
     category_display = serializers.CharField(read_only=True)
     author = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
+    content = serializers.SerializerMethodField()
 
     class Meta:
         model = Blog
@@ -66,6 +67,12 @@ class BlogDetailSerializer(serializers.ModelSerializer):
         if obj.image:
             return get_full_media_url(obj.image.url)
         return None
+    
+    def get_content(self, obj):
+        """Process content HTML to convert relative image URLs to absolute URLs"""
+        if obj.content:
+            return process_content_images(obj.content)
+        return obj.content
 
 
 class HomeBlogSummarySerializer(serializers.ModelSerializer):

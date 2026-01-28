@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from main.utils import get_full_media_url
+from main.utils import get_full_media_url, process_content_images
 from .models import Objective, TeamMember, WhoWeAre, OurStory, WhatSetsUsApart, Partner
 
 
@@ -50,6 +50,7 @@ class TeamMemberSerializer(serializers.ModelSerializer):
 
 class WhoWeAreSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    content = serializers.SerializerMethodField()
 
     class Meta:
         model = WhoWeAre
@@ -68,10 +69,17 @@ class WhoWeAreSerializer(serializers.ModelSerializer):
         if obj.image:
             return get_full_media_url(obj.image.url)
         return None
+    
+    def get_content(self, obj):
+        """Process content HTML to convert relative image URLs to absolute URLs"""
+        if obj.content:
+            return process_content_images(obj.content)
+        return obj.content
 
 
 class OurStorySerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    content = serializers.SerializerMethodField()
 
     class Meta:
         model = OurStory
@@ -90,6 +98,12 @@ class OurStorySerializer(serializers.ModelSerializer):
         if obj.image:
             return get_full_media_url(obj.image.url)
         return None
+    
+    def get_content(self, obj):
+        """Process content HTML to convert relative image URLs to absolute URLs"""
+        if obj.content:
+            return process_content_images(obj.content)
+        return obj.content
 
 
 class WhatSetsUsApartSerializer(serializers.ModelSerializer):

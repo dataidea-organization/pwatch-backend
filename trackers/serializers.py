@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from main.utils import get_full_media_url
+from main.utils import get_full_media_url, process_content_images
 from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
 
 
@@ -121,6 +121,7 @@ class MPListSerializer(serializers.ModelSerializer):
 class MPDetailSerializer(serializers.ModelSerializer):
     """Full serializer for MP detail view"""
     photo = serializers.SerializerMethodField()
+    bio = serializers.SerializerMethodField()
 
     class Meta:
         model = MP
@@ -141,6 +142,12 @@ class MPDetailSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+    
+    def get_bio(self, obj):
+        """Process bio HTML to convert relative image URLs to absolute URLs"""
+        if obj.bio:
+            return process_content_images(obj.bio)
+        return obj.bio
 
     def get_photo(self, obj):
         if obj.photo:
