@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
+from .models import Bill, BillReading, MP, DebtData, Lender, Loan, LoanDocument, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
+
+
+class LoanDocumentInline(admin.TabularInline):
+    model = LoanDocument
+    extra = 0
+    fields = ['label', 'file']
 
 
 class BillReadingInline(admin.TabularInline):
@@ -94,13 +100,21 @@ class DebtDataAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Lender)
+class LenderAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_at']
+    search_fields = ['name']
+    ordering = ['name']
+
+
 @admin.register(Loan)
 class LoanAdmin(admin.ModelAdmin):
-    list_display = ['sector', 'label', 'approved_amount', 'currency', 'source', 'approval_date']
+    list_display = ['sector', 'label', 'approved_amount', 'currency', 'lender', 'source', 'approval_date']
     list_filter = ['sector', 'currency', 'source', 'approval_date']
     search_fields = ['label', 'description', 'sector']
     ordering = ['-approval_date', '-created_at']
     date_hierarchy = 'approval_date'
+    inlines = [LoanDocumentInline]
 
     fieldsets = (
         ('Loan Information', {
@@ -109,8 +123,9 @@ class LoanAdmin(admin.ModelAdmin):
         ('Financial Details', {
             'fields': ('approved_amount', 'currency')
         }),
-        ('Source Information', {
-            'fields': ('source', 'approval_date')
+        ('Source / Lender', {
+            'fields': ('lender', 'source', 'approval_date'),
+            'description': 'Use Lender for custom providers, or Source for preset. Lender takes precedence if set.'
         }),
     )
 

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from main.utils import get_full_media_url, process_content_images
-from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
+from .models import Bill, BillReading, MP, DebtData, Lender, Loan, LoanDocument, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
 
 
 class BillReadingSerializer(serializers.ModelSerializer):
@@ -177,11 +177,27 @@ class DebtDataSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
 
+class LoanDocumentSerializer(serializers.ModelSerializer):
+    """Serializer for loan documents (list/detail)."""
+    file = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LoanDocument
+        fields = ['id', 'label', 'file', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def get_file(self, obj):
+        if obj.file:
+            return get_full_media_url(obj.file.url)
+        return None
+
+
 class LoanSerializer(serializers.ModelSerializer):
-    """Serializer for Loans"""
+    """Serializer for Loans (list)."""
     sector_display = serializers.CharField(source='get_sector_display', read_only=True)
     currency_display = serializers.CharField(source='get_currency_display', read_only=True)
     source_display = serializers.CharField(source='get_source_display', read_only=True)
+    lender_display = serializers.CharField(read_only=True)
 
     class Meta:
         model = Loan
@@ -193,6 +209,8 @@ class LoanSerializer(serializers.ModelSerializer):
             'approved_amount',
             'currency',
             'currency_display',
+            'lender',
+            'lender_display',
             'source',
             'source_display',
             'approval_date',
@@ -201,6 +219,14 @@ class LoanSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+
+class LoanDetailSerializer(LoanSerializer):
+    """Serializer for Loan detail with documents."""
+    documents = LoanDocumentSerializer(many=True, read_only=True)
+
+    class Meta(LoanSerializer.Meta):
+        fields = LoanSerializer.Meta.fields + ['documents']
 
 
 class HansardSerializer(serializers.ModelSerializer):

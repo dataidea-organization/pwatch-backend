@@ -12,7 +12,7 @@ from django.core.cache import cache
 from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
 from .serializers import (
     BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer,
-    DebtDataSerializer, LoanSerializer, HansardSerializer, BudgetSerializer, OrderPaperSerializer,
+    DebtDataSerializer, LoanSerializer, LoanDetailSerializer, HansardSerializer, BudgetSerializer, OrderPaperSerializer,
     CommitteeListSerializer, CommitteeDetailSerializer,
     HomeSummaryMPSerializer, HomeSummaryBillSerializer, HomeSummaryLoanSerializer,
     HomeSummaryBudgetSerializer, HomeSummaryHansardSerializer, HomeSummaryOrderPaperSerializer
@@ -195,9 +195,14 @@ class LoanViewSet(viewsets.ModelViewSet):
 
     Provides loan data with filtering by sector and source
     """
-    queryset = Loan.objects.all()
+    queryset = Loan.objects.all().select_related('lender').prefetch_related('documents')
     serializer_class = LoanSerializer
     pagination_class = LoanPagination
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return LoanDetailSerializer
+        return LoanSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['sector', 'currency', 'source']
     search_fields = ['label', 'description', 'sector']

@@ -178,6 +178,20 @@ class DebtData(models.Model):
         return f"{self.year} - Debt: UGX {self.national_debt:,.0f}M, GDP: UGX {self.gdp:,.0f}M"
 
 
+class Lender(models.Model):
+    """Lender/source for loans. Admins can add new providers."""
+    name = models.CharField(max_length=200, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Lender'
+        verbose_name_plural = 'Lenders'
+
+    def __str__(self):
+        return self.name
+
+
 class Loan(models.Model):
     """Model for Government Loans and Projects"""
     SECTOR_CHOICES = [
@@ -212,10 +226,19 @@ class Loan(models.Model):
 
     sector = models.CharField(max_length=50, choices=SECTOR_CHOICES)
     label = models.CharField(max_length=500, help_text="Project name or description", db_index=True)
+    lender = models.ForeignKey(
+        Lender,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='loans',
+        help_text="Lender/provider. Add new in Lenders if not listed.",
+    )
     source = models.CharField(
         max_length=50,
         choices=SOURCE_CHOICES,
-        help_text="Loan source/creditor",
+        blank=True,
+        help_text="Fallback if lender not set (legacy)",
         db_index=True
     )
     approved_amount = models.DecimalField(
@@ -237,6 +260,28 @@ class Loan(models.Model):
 
     def __str__(self):
         return f"{self.get_sector_display()}: {self.label[:50]}"
+
+    @property
+    def lender_display(self):
+        if self.lender_id:
+            return self.lender.name
+        return self.get_source_display() if self.source else ""
+
+
+class LoanDocument(models.Model):
+    """Document attached to a loan (e.g. proposal, report)."""
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='documents', db_index=True)
+    label = models.CharField(max_length=200, help_text="e.g. Proposal, Report, Agreement")
+    file = models.FileField(upload_to='loans/documents/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['label']
+        verbose_name = 'Loan document'
+        verbose_name_plural = 'Loan documents'
+
+    def __str__(self):
+        return f"{self.label} – {self.loan.label}"
 
 class Hansard(models.Model):
     """Model for Hansards"""
