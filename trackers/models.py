@@ -248,7 +248,7 @@ class Loan(models.Model):
     )
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD')
     approval_date = models.DateField(null=True, blank=True)
-    description = models.TextField(blank=True)
+    description = RichTextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

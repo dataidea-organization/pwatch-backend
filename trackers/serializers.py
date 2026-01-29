@@ -222,11 +222,17 @@ class LoanSerializer(serializers.ModelSerializer):
 
 
 class LoanDetailSerializer(LoanSerializer):
-    """Serializer for Loan detail with documents."""
+    """Serializer for Loan detail with documents. Description is processed for absolute image URLs."""
+    description = serializers.SerializerMethodField()
     documents = LoanDocumentSerializer(many=True, read_only=True)
 
     class Meta(LoanSerializer.Meta):
         fields = LoanSerializer.Meta.fields + ['documents']
+
+    def get_description(self, obj):
+        if obj.description:
+            return process_content_images(obj.description)
+        return ''
 
 
 class HansardSerializer(serializers.ModelSerializer):
