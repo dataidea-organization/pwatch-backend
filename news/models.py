@@ -34,6 +34,7 @@ class News(models.Model):
     image = models.ImageField(upload_to='news/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     published_date = models.DateField(default=default_published_date)
+    view_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

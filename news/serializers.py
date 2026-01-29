@@ -71,10 +71,11 @@ class NewsDetailSerializer(serializers.ModelSerializer):
             'image',
             'status',
             'published_date',
+            'view_count',
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['slug', 'created_at', 'updated_at']
+        read_only_fields = ['slug', 'view_count', 'created_at', 'updated_at']
 
     def get_author(self, obj):
         if obj.author:
