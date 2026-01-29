@@ -49,3 +49,21 @@ class Blog(models.Model):
     @property
     def category_display(self):
         return dict(self.CATEGORY_CHOICES).get(self.category, self.category)
+
+
+class BlogComment(models.Model):
+    """Anonymous comment on a blog post. No login required."""
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='comments', db_index=True)
+    author_name = models.CharField(max_length=255)
+    author_email = models.EmailField()
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=True, help_text='Approved comments are shown publicly')
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Blog comment'
+        verbose_name_plural = 'Blog comments'
+
+    def __str__(self):
+        return f'Comment by {self.author_name} on {self.blog.title}'

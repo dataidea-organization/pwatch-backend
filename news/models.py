@@ -54,6 +54,24 @@ class News(models.Model):
         return dict(self.CATEGORY_CHOICES).get(self.category, self.category)
 
 
+class NewsComment(models.Model):
+    """Anonymous comment on a news article. No login required."""
+    news = models.ForeignKey(News, on_delete=models.CASCADE, related_name='comments', db_index=True)
+    author_name = models.CharField(max_length=255)
+    author_email = models.EmailField()
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=True, help_text='Approved comments are shown publicly')
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'News comment'
+        verbose_name_plural = 'News comments'
+
+    def __str__(self):
+        return f'Comment by {self.author_name} on {self.news.title}'
+
+
 class HotInParliament(models.Model):
     """Model for 'Hot in Parliament' items displayed on the home page"""
     title = models.CharField(max_length=500, db_index=True)

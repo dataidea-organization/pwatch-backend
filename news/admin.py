@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import News, HotInParliament
+from .models import News, NewsComment, HotInParliament
 
 
 @admin.register(News)
@@ -22,6 +22,15 @@ class NewsAdmin(admin.ModelAdmin):
             'fields': ('status', 'published_date')
         }),
     )
+
+
+@admin.register(NewsComment)
+class NewsCommentAdmin(admin.ModelAdmin):
+    list_display = ['author_name', 'news', 'created_at', 'is_approved']
+    list_filter = ['is_approved', 'created_at']
+    search_fields = ['author_name', 'author_email', 'body']
+    list_editable = ['is_approved']
+    raw_id_fields = ['news']
 
 
 @admin.register(HotInParliament)

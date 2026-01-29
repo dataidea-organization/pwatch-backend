@@ -3,12 +3,20 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
-from .models import News, HotInParliament
-from .serializers import NewsListSerializer, NewsDetailSerializer, HomeNewsSummarySerializer, HotInParliamentSerializer
+from .models import News, NewsComment, HotInParliament
+from .serializers import (
+    NewsListSerializer,
+    NewsDetailSerializer,
+    HomeNewsSummarySerializer,
+    HotInParliamentSerializer,
+    NewsCommentSerializer,
+    NewsCommentCreateSerializer,
+)
 
 
 class NewsPagination(PageNumberPagination):
@@ -149,3 +157,35 @@ class HotInParliamentDetailView(APIView):
                 {'error': 'Hot in Parliament item not found'},
                 status=404
             )
+
+
+# News comments - no login required
+class NewsCommentListCreateView(APIView):
+    """
+    List comments for a news article (GET) or create a comment (POST).
+    No authentication required.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, slug):
+        try:
+            news = News.objects.get(slug=slug)
+        except News.DoesNotExist:
+            return Response({'error': 'News article not found'}, status=status.HTTP_404_NOT_FOUND)
+        comments = NewsComment.objects.filter(news=news, is_approved=True).order_by('-created_at')
+        serializer = NewsCommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, slug):
+        try:
+            news = News.objects.get(slug=slug)
+        except News.DoesNotExist:
+            return Response({'error': 'News article not found'}, status=status.HTTP_404_NOT_FOUND)
+        data = {**request.data, 'news': news.id}
+        serializer = NewsCommentCreateSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            # Return the comment in list format (no email)
+            output = NewsCommentSerializer(serializer.instance)
+            return Response(output.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

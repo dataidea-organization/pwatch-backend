@@ -1,6 +1,24 @@
 from rest_framework import serializers
 from main.utils import get_full_media_url, process_content_images
-from .models import Blog
+from .models import Blog, BlogComment
+
+
+class BlogCommentSerializer(serializers.ModelSerializer):
+    """Serializer for blog comments (list/read)."""
+    class Meta:
+        model = BlogComment
+        fields = ['id', 'author_name', 'body', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class BlogCommentCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating a blog comment. No auth required."""
+    class Meta:
+        model = BlogComment
+        fields = ['blog', 'author_name', 'author_email', 'body']
+
+    def create(self, validated_data):
+        return BlogComment.objects.create(**validated_data)
 
 
 class BlogListSerializer(serializers.ModelSerializer):

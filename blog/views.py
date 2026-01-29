@@ -7,8 +7,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
-from .models import Blog
-from .serializers import BlogListSerializer, BlogDetailSerializer, HomeBlogSummarySerializer
+from .models import Blog, BlogComment
+from .serializers import (
+    BlogListSerializer,
+    BlogDetailSerializer,
+    HomeBlogSummarySerializer,
+    BlogCommentSerializer,
+    BlogCommentCreateSerializer,
+)
 
 
 class BlogPagination(PageNumberPagination):
@@ -90,3 +96,34 @@ class HomeBlogSummaryView(APIView):
         cache.set(cache_key, data, 600)  # Cache for 10 minutes
         
         return Response(data)
+
+
+# Blog comments - no login required
+class BlogCommentListCreateView(APIView):
+    """
+    List comments for a blog post (GET) or create a comment (POST).
+    No authentication required.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, slug):
+        try:
+            blog = Blog.objects.get(slug=slug)
+        except Blog.DoesNotExist:
+            return Response({'error': 'Blog post not found'}, status=status.HTTP_404_NOT_FOUND)
+        comments = BlogComment.objects.filter(blog=blog, is_approved=True).order_by('-created_at')
+        serializer = BlogCommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, slug):
+        try:
+            blog = Blog.objects.get(slug=slug)
+        except Blog.DoesNotExist:
+            return Response({'error': 'Blog post not found'}, status=status.HTTP_404_NOT_FOUND)
+        data = {**request.data, 'blog': blog.id}
+        serializer = BlogCommentCreateSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            output = BlogCommentSerializer(serializer.instance)
+            return Response(output.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

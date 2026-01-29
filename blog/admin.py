@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Blog
+from .models import Blog, BlogComment
 
 
 @admin.register(Blog)
@@ -24,3 +24,12 @@ class BlogAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(BlogComment)
+class BlogCommentAdmin(admin.ModelAdmin):
+    list_display = ['author_name', 'blog', 'created_at', 'is_approved']
+    list_filter = ['is_approved', 'created_at']
+    search_fields = ['author_name', 'author_email', 'body']
+    list_editable = ['is_approved']
+    raw_id_fields = ['blog']

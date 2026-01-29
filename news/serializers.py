@@ -1,6 +1,24 @@
 from rest_framework import serializers
 from main.utils import get_full_media_url, process_content_images
-from .models import News, HotInParliament
+from .models import News, NewsComment, HotInParliament
+
+
+class NewsCommentSerializer(serializers.ModelSerializer):
+    """Serializer for news comments (list/read)."""
+    class Meta:
+        model = NewsComment
+        fields = ['id', 'author_name', 'body', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class NewsCommentCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating a news comment. No auth required."""
+    class Meta:
+        model = NewsComment
+        fields = ['news', 'author_name', 'author_email', 'body']
+
+    def create(self, validated_data):
+        return NewsComment.objects.create(**validated_data)
 
 
 class NewsListSerializer(serializers.ModelSerializer):
