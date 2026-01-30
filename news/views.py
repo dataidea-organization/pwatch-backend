@@ -9,7 +9,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
-from .models import News, NewsComment, HotInParliament
+from django.db.models import F
+from .models import News, NewsComment, HotInParliament, HotInParliamentComment
 from .serializers import (
     NewsListSerializer,
     NewsDetailSerializer,
@@ -17,6 +18,8 @@ from .serializers import (
     HotInParliamentSerializer,
     NewsCommentSerializer,
     NewsCommentCreateSerializer,
+    HotInParliamentCommentSerializer,
+    HotInParliamentCommentCreateSerializer,
 )
 
 
@@ -133,7 +136,7 @@ class HotInParliamentView(APIView):
         hot_items = HotInParliament.objects.filter(
             is_active=True
         ).select_related('author').only(
-            'id', 'title', 'slug', 'author', 'content', 'image', 'link_url', 'published_date'
+            'id', 'title', 'slug', 'author', 'content', 'image', 'link_url', 'published_date', 'view_count'
         ).order_by('order', '-published_date', '-created_at')
         
         # Serialize data
@@ -148,16 +151,19 @@ class HotInParliamentView(APIView):
         return Response(data)
 
 
-# Hot in Parliament detail endpoint
+# Hot in Parliament detail endpoint - increments view_count
 class HotInParliamentDetailView(APIView):
     """
     Endpoint to retrieve a single Hot in Parliament item by slug.
+    Increments view_count on each request.
     """
     permission_classes = [AllowAny]
 
     def get(self, request, slug):
         try:
             hot_item = HotInParliament.objects.get(slug=slug)
+            HotInParliament.objects.filter(pk=hot_item.pk).update(view_count=F('view_count') + 1)
+            hot_item.refresh_from_db()
             serializer = HotInParliamentSerializer(hot_item)
             return Response(serializer.data)
         except HotInParliament.DoesNotExist:
@@ -165,6 +171,37 @@ class HotInParliamentDetailView(APIView):
                 {'error': 'Hot in Parliament item not found'},
                 status=404
             )
+
+
+# Hot in Parliament comments - no login required
+class HotInParliamentCommentListCreateView(APIView):
+    """
+    List comments for a Latest in Parliament item (GET) or create a comment (POST).
+    No authentication required.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, slug):
+        try:
+            hot_item = HotInParliament.objects.get(slug=slug)
+        except HotInParliament.DoesNotExist:
+            return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+        comments = HotInParliamentComment.objects.filter(hot_item=hot_item, is_approved=True).order_by('-created_at')
+        serializer = HotInParliamentCommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, slug):
+        try:
+            hot_item = HotInParliament.objects.get(slug=slug)
+        except HotInParliament.DoesNotExist:
+            return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+        data = {**request.data, 'hot_item': hot_item.id}
+        serializer = HotInParliamentCommentCreateSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            output = HotInParliamentCommentSerializer(serializer.instance)
+            return Response(output.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # News comments - no login required

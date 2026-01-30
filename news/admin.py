@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import News, NewsComment, HotInParliament
+from .models import News, NewsComment, HotInParliament, HotInParliamentComment
 
 
 @admin.register(News)
@@ -33,9 +33,18 @@ class NewsCommentAdmin(admin.ModelAdmin):
     raw_id_fields = ['news']
 
 
+@admin.register(HotInParliamentComment)
+class HotInParliamentCommentAdmin(admin.ModelAdmin):
+    list_display = ['author_name', 'hot_item', 'created_at', 'is_approved']
+    list_filter = ['is_approved', 'created_at']
+    search_fields = ['author_name', 'author_email', 'body']
+    list_editable = ['is_approved']
+    raw_id_fields = ['hot_item']
+
+
 @admin.register(HotInParliament)
 class HotInParliamentAdmin(admin.ModelAdmin):
-    list_display = ['title', 'author', 'is_active', 'order', 'published_date']
+    list_display = ['title', 'author', 'view_count', 'is_active', 'order', 'published_date']
     list_filter = ['is_active', 'published_date', 'author']
     search_fields = ['title', 'author__username', 'author__first_name', 'author__last_name', 'content']
     prepopulated_fields = {'slug': ('title',)}

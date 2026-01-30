@@ -84,6 +84,7 @@ class HotInParliament(models.Model):
     is_active = models.BooleanField(default=True, help_text="Whether this item should be displayed")
     order = models.PositiveIntegerField(default=0, help_text="Order for display (lower numbers appear first)")
     published_date = models.DateField(default=default_published_date)
+    view_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -99,6 +100,24 @@ class HotInParliament(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class HotInParliamentComment(models.Model):
+    """Anonymous comment on a Latest in Parliament item. No login required."""
+    hot_item = models.ForeignKey(HotInParliament, on_delete=models.CASCADE, related_name='comments', db_index=True)
+    author_name = models.CharField(max_length=255)
+    author_email = models.EmailField()
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=True, help_text="Approved comments are shown publicly")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Hot in Parliament comment'
+        verbose_name_plural = 'Hot in Parliament comments'
+
+    def __str__(self):
+        return f'Comment by {self.author_name} on {self.hot_item.title}'
 
 
 # Signal to clear cache when HotInParliament items are saved or deleted

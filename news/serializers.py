@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from main.utils import get_full_media_url, process_content_images
-from .models import News, NewsComment, HotInParliament
+from .models import News, NewsComment, HotInParliament, HotInParliamentComment
 
 
 class NewsCommentSerializer(serializers.ModelSerializer):
@@ -115,6 +115,24 @@ class HomeNewsSummarySerializer(serializers.ModelSerializer):
         return None
 
 
+class HotInParliamentCommentSerializer(serializers.ModelSerializer):
+    """Serializer for Hot in Parliament comments (list/read)."""
+    class Meta:
+        model = HotInParliamentComment
+        fields = ['id', 'author_name', 'body', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class HotInParliamentCommentCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating a Hot in Parliament comment. No auth required."""
+    class Meta:
+        model = HotInParliamentComment
+        fields = ['hot_item', 'author_name', 'author_email', 'body']
+
+    def create(self, validated_data):
+        return HotInParliamentComment.objects.create(**validated_data)
+
+
 class HotInParliamentSerializer(serializers.ModelSerializer):
     """Serializer for Hot in Parliament items"""
     author = serializers.SerializerMethodField()
@@ -132,6 +150,7 @@ class HotInParliamentSerializer(serializers.ModelSerializer):
             'image',
             'link_url',
             'published_date',
+            'view_count',
         ]
 
     def get_author(self, obj):
