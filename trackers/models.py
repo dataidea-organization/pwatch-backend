@@ -67,8 +67,33 @@ class BillReading(models.Model):
         return f"{self.bill.title} - {self.get_stage_display()}"
 
 
+class ParliamentTerm(models.Model):
+    """Parliament term (e.g. 11th Parliament 2021-2026). Only one term should have is_current=True."""
+    name = models.CharField(max_length=100, help_text="e.g. 11th Parliament")
+    start_year = models.IntegerField(help_text="e.g. 2021")
+    end_year = models.IntegerField(help_text="e.g. 2026")
+    is_current = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-start_year']
+        verbose_name = 'Parliament Term'
+        verbose_name_plural = 'Parliament Terms'
+
+    def __str__(self):
+        return f"{self.name} ({self.start_year}-{self.end_year})"
+
+
 class MP(models.Model):
     """Model for Members of Parliament"""
+    parliament_term = models.ForeignKey(
+        ParliamentTerm,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='mps',
+        help_text="Parliament term this MP belongs to",
+    )
+
     # Personal Information
     first_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=100, blank=True)

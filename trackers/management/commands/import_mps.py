@@ -1,10 +1,10 @@
 import json
 from django.core.management.base import BaseCommand
-from trackers.models import MP
+from trackers.models import MP, ParliamentTerm
 
 
 class Command(BaseCommand):
-    help = 'Import MPs from a JSON file'
+    help = 'Import MPs from a JSON file. Use --term <id> to assign MPs to a parliament term (e.g. when adding a new parliament).'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -17,9 +17,29 @@ class Command(BaseCommand):
             action='store_true',
             help='Clear existing MPs before importing'
         )
+        parser.add_argument(
+            '--term',
+            type=int,
+            metavar='ID',
+            help='Parliament term ID to assign imported MPs to. If omitted, uses the current parliament term.'
+        )
 
     def handle(self, *args, **options):
         json_file = options['json_file']
+        term_id = options.get('term')
+
+        parliament_term = None
+        if term_id:
+            try:
+                parliament_term = ParliamentTerm.objects.get(pk=term_id)
+                self.stdout.write(f'Assigning MPs to term: {parliament_term}')
+            except ParliamentTerm.DoesNotExist:
+                self.stdout.write(self.style.ERROR(f'Parliament term with id={term_id} not found.'))
+                return
+        else:
+            parliament_term = ParliamentTerm.objects.filter(is_current=True).first()
+            if parliament_term:
+                self.stdout.write(f'Using current term: {parliament_term}')
 
         # Clear existing MPs if requested
         if options['clear']:
@@ -67,6 +87,8 @@ class Command(BaseCommand):
                     'email': mp_data.get('email', '').strip(),
                     'bio': mp_data.get('bio'),
                 }
+                if parliament_term is not None:
+                    mp_fields['parliament_term'] = parliament_term
 
                 # Auto-generate name if not provided
                 if not mp_fields['name']:
@@ -76,13 +98,15 @@ class Command(BaseCommand):
                     name_parts.append(mp_fields['last_name'])
                     mp_fields['name'] = ' '.join(name_parts)
 
-                # Check if MP already exists (by name or email)
+                # Check if MP already exists (by name or email, within same term if term is set)
                 existing_mp = None
-                if mp_fields['email']:
-                    existing_mp = MP.objects.filter(email=mp_fields['email']).first()
-
+                lookup = MP.objects.all()
+                if parliament_term is not None:
+                    lookup = lookup.filter(parliament_term=parliament_term)
+                if mp_fields.get('email'):
+                    existing_mp = lookup.filter(email=mp_fields['email']).first()
                 if not existing_mp:
-                    existing_mp = MP.objects.filter(name=mp_fields['name']).first()
+                    existing_mp = lookup.filter(name=mp_fields['name']).first()
 
                 if existing_mp:
                     # Update existing MP

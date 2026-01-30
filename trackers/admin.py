@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Bill, BillReading, MP, DebtData, Lender, Loan, LoanDocument, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
+from .models import Bill, BillReading, MP, ParliamentTerm, DebtData, Lender, Loan, LoanDocument, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
+
+
+@admin.register(ParliamentTerm)
+class ParliamentTermAdmin(admin.ModelAdmin):
+    list_display = ['name', 'start_year', 'end_year', 'is_current']
+    list_filter = ['is_current']
+    search_fields = ['name']
+    ordering = ['-start_year']
 
 
 class LoanDocumentInline(admin.TabularInline):
@@ -56,12 +64,15 @@ class BillReadingAdmin(admin.ModelAdmin):
 
 @admin.register(MP)
 class MPAdmin(admin.ModelAdmin):
-    list_display = ['name', 'party', 'constituency', 'district', 'email', 'phone_no']
-    list_filter = ['party', 'district']
+    list_display = ['name', 'parliament_term', 'party', 'constituency', 'district', 'email', 'phone_no']
+    list_filter = ['party', 'district', 'parliament_term']
     search_fields = ['name', 'first_name', 'last_name', 'constituency', 'district', 'email']
     ordering = ['last_name', 'first_name']
 
     fieldsets = (
+        ('Parliament Term', {
+            'fields': ('parliament_term',)
+        }),
         ('Personal Information', {
             'fields': ('first_name', 'middle_name', 'last_name', 'name', 'photo')
         }),

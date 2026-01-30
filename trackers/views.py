@@ -9,9 +9,10 @@ from django.db.models import Count, Q
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
-from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
+from .models import Bill, BillReading, MP, ParliamentTerm, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
 from .serializers import (
     BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer,
+    ParliamentTermSerializer,
     DebtDataSerializer, LoanSerializer, LoanDetailSerializer, HansardSerializer, BudgetSerializer, OrderPaperSerializer,
     CommitteeListSerializer, CommitteeDetailSerializer,
     HomeSummaryMPSerializer, HomeSummaryBillSerializer, HomeSummaryLoanSerializer,
@@ -81,6 +82,13 @@ class MPPagination(PageNumberPagination):
     max_page_size = 100
 
 
+class ParliamentTermViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only list of parliament terms for the frontend selector."""
+    queryset = ParliamentTerm.objects.all().order_by('-start_year')
+    serializer_class = ParliamentTermSerializer
+    pagination_class = None
+
+
 class MPViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Members of Parliament
@@ -88,6 +96,7 @@ class MPViewSet(viewsets.ModelViewSet):
     Provides list, retrieve, create, update, and destroy actions
     Filters by party, district, and constituency
     Search by name, constituency, and district
+    By default shows only MPs from the current parliament term; use ?parliament_term=<id> for a specific term.
     """
     queryset = MP.objects.all()
     pagination_class = MPPagination
@@ -98,8 +107,17 @@ class MPViewSet(viewsets.ModelViewSet):
     ordering = ['last_name', 'first_name']
 
     def get_queryset(self):
-        """Support multi-select party/district filters via comma-separated values."""
+        """Default to current parliament term; allow override via ?parliament_term=<id>. Support multi-select party/district."""
         qs = super().get_queryset()
+        term_param = self.request.query_params.get('parliament_term')
+        if term_param:
+            try:
+                term_id = int(term_param)
+                qs = qs.filter(parliament_term_id=term_id)
+            except (ValueError, TypeError):
+                pass
+        else:
+            qs = qs.filter(parliament_term__is_current=True)
         party_param = self.request.query_params.get('party')
         district_param = self.request.query_params.get('district')
 
@@ -342,7 +360,7 @@ class HomeSummaryView(APIView):
         
         # Fetch latest 5 items from each tracker with optimized queries
         # Using only() to fetch only needed fields
-        mps = MP.objects.only('id', 'name', 'party', 'constituency').order_by('-created_at')[:5]
+        mps = MP.objects.filter(parliament_term__is_current=True).only('id', 'name', 'party', 'constituency').order_by('-created_at')[:5]
         bills = Bill.objects.only('id', 'title').order_by('-created_at')[:5]
         loans = Loan.objects.only('id', 'label', 'sector', 'source').order_by('-created_at')[:5]
         budgets = Budget.objects.only('id', 'name', 'financial_year', 'file').order_by('-created_at')[:5]

@@ -1,6 +1,12 @@
 from rest_framework import serializers
 from main.utils import get_full_media_url, process_content_images
-from .models import Bill, BillReading, MP, DebtData, Lender, Loan, LoanDocument, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
+from .models import Bill, BillReading, MP, ParliamentTerm, DebtData, Lender, Loan, LoanDocument, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
+
+
+class ParliamentTermSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ParliamentTerm
+        fields = ['id', 'name', 'start_year', 'end_year', 'is_current']
 
 
 class BillReadingSerializer(serializers.ModelSerializer):

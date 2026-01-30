@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BillViewSet, BillReadingViewSet, MPViewSet, DebtDataViewSet, LoanViewSet, HansardViewSet, BudgetViewSet, OrderPaperViewSet, CommitteeViewSet, HomeSummaryView
+from .views import BillViewSet, BillReadingViewSet, ParliamentTermViewSet, MPViewSet, DebtDataViewSet, LoanViewSet, HansardViewSet, BudgetViewSet, OrderPaperViewSet, CommitteeViewSet, HomeSummaryView
 
 router = DefaultRouter()
 router.register(r'bills', BillViewSet, basename='bill')
 router.register(r'readings', BillReadingViewSet, basename='reading')
+router.register(r'parliament-terms', ParliamentTermViewSet, basename='parliamentterm')
 router.register(r'mps', MPViewSet, basename='mp')
 router.register(r'debt', DebtDataViewSet, basename='debt')
 router.register(r'loans', LoanViewSet, basename='loan')
