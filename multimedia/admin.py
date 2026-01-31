@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote
 
 
@@ -110,8 +110,8 @@ class PollAdmin(admin.ModelAdmin):
 
     def is_active_display(self, obj):
         if obj.is_active:
-            return format_html('<span style="color: green;">●</span> Active')
-        return format_html('<span style="color: red;">●</span> Inactive')
+            return mark_safe('<span style="color: green;">●</span> Active')
+        return mark_safe('<span style="color: red;">●</span> Inactive')
     is_active_display.short_description = 'Status'
 
 
