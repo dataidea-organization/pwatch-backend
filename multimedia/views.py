@@ -98,7 +98,7 @@ class PollViewSet(viewsets.ModelViewSet):
     Filters by status, category, and featured
     Search by title and description
     """
-    queryset = Poll.objects.all().prefetch_related('x_poll_link').order_by('-featured', '-created_at')
+    queryset = Poll.objects.all().order_by('-featured', '-created_at')
     serializer_class = PollSerializer
     pagination_class = PollPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
