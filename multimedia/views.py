@@ -1,3 +1,4 @@
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -107,14 +108,19 @@ class PollViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'start_date', 'end_date', 'title']
     ordering = ['-featured', '-created_at']
 
+    def dispatch(self, request, *args, **kwargs):
+        # Exempt vote action from CSRF so frontend (different origin) can POST without token
+        if request.method == 'POST' and 'vote' in request.path:
+            return csrf_exempt(super().dispatch)(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
+
     @action(detail=True, methods=['post'], url_path='vote')
     def vote(self, request, pk=None):
         """
-        Submit a vote for a poll option
+        Submit a vote for a poll option. CSRF-exempt so the frontend can POST from another origin.
         """
         poll = self.get_object()
-        
-        # Check if poll is active
+
         if not poll.is_active:
             return Response(
                 {'error': 'This poll is not currently active.'},
@@ -122,9 +128,16 @@ class PollViewSet(viewsets.ModelViewSet):
             )
 
         option_id = request.data.get('option_id')
-        if not option_id:
+        if option_id is None:
             return Response(
                 {'error': 'option_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            option_id = int(option_id)
+        except (TypeError, ValueError):
+            return Response(
+                {'error': 'option_id must be a number.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -136,32 +149,27 @@ class PollViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Get IP address and session ID
         ip_address = self.get_client_ip(request)
-        session_id = request.session.session_key or request.data.get('session_id', '')
+        session_id = (getattr(request.session, 'session_key', None) or '') or request.data.get('session_id', '')
 
-        # Check for existing vote (if multiple votes not allowed)
         if not poll.allow_multiple_votes:
             existing_vote = PollVote.objects.filter(
                 poll=poll,
                 ip_address=ip_address,
                 session_id=session_id
             ).first()
-
             if existing_vote:
                 return Response(
                     {'error': 'You have already voted on this poll.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-        # Create vote
         vote = PollVote.objects.create(
             poll=poll,
             option=option,
-            ip_address=ip_address,
-            session_id=session_id
+            ip_address=ip_address or None,
+            session_id=session_id or ''
         )
-
         serializer = PollVoteSerializer(vote)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
