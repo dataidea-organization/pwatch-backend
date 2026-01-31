@@ -84,7 +84,7 @@ class PollOptionInline(admin.TabularInline):
 
 @admin.register(Poll)
 class PollAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'status', 'total_votes_display', 'is_active_display', 'featured', 'created_at']
+    list_display = ['title', 'category', 'status', 'total_votes_display', 'voting_open_display', 'featured', 'created_at']
     list_filter = ['status', 'category', 'featured', 'created_at']
     search_fields = ['title', 'description', 'category']
     date_hierarchy = 'created_at'
@@ -108,11 +108,12 @@ class PollAdmin(admin.ModelAdmin):
         return obj.total_votes
     total_votes_display.short_description = 'Total Votes'
 
-    def is_active_display(self, obj):
+    def voting_open_display(self, obj):
+        """Whether voting is open right now (considers status and start/end dates)."""
         if obj.is_active:
-            return mark_safe('<span style="color: green;">●</span> Active')
-        return mark_safe('<span style="color: red;">●</span> Inactive')
-    is_active_display.short_description = 'Status'
+            return mark_safe('<span style="color: green;">Yes</span>')
+        return mark_safe('<span style="color: red;">No</span>')
+    voting_open_display.short_description = 'Voting open'
 
 
 @admin.register(PollOption)
