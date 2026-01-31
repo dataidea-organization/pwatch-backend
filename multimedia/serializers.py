@@ -109,6 +109,7 @@ class PollSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     is_x_poll = serializers.SerializerMethodField()
     x_poll_url = serializers.SerializerMethodField()
+    x_poll_embed_html = serializers.SerializerMethodField()
 
     class Meta:
         model = Poll
@@ -126,6 +127,7 @@ class PollSerializer(serializers.ModelSerializer):
             'featured',
             'is_x_poll',
             'x_poll_url',
+            'x_poll_embed_html',
             'options',
             'total_votes',
             'is_active',
@@ -139,6 +141,11 @@ class PollSerializer(serializers.ModelSerializer):
     def get_x_poll_url(self, obj):
         if hasattr(obj, 'x_poll_link'):
             return obj.x_poll_link.x_poll_url
+        return None
+
+    def get_x_poll_embed_html(self, obj):
+        if hasattr(obj, 'x_poll_link') and getattr(obj.x_poll_link, 'embed_html', None):
+            return obj.x_poll_link.embed_html
         return None
 
 

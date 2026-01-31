@@ -235,6 +235,10 @@ class XPoll(models.Model):
     x_poll_url = models.URLField(
         help_text="URL to the X (Twitter) post where this poll was created. Users can view or vote on X too."
     )
+    embed_html = models.TextField(
+        blank=True,
+        help_text="Paste the full blockquote HTML from Twitter's 'Embed Tweet' (the <blockquote class=\"twitter-tweet\">...</blockquote> part). Required for the poll and vote options to show."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

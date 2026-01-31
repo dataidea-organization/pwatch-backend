@@ -143,9 +143,23 @@ class PollVoteAdmin(admin.ModelAdmin):
 
 @admin.register(XPoll)
 class XPollAdmin(admin.ModelAdmin):
-    list_display = ['poll', 'x_poll_url', 'created_at']
+    list_display = ['poll', 'x_poll_url', 'has_embed_html', 'created_at']
     list_filter = ['created_at']
     search_fields = ['poll__title', 'x_poll_url']
     raw_id_fields = ['poll']
     readonly_fields = ['created_at', 'updated_at']
+    fieldsets = (
+        (None, {
+            'fields': ('poll', 'x_poll_url')
+        }),
+        ('Embed (for poll to show)', {
+            'fields': ('embed_html',),
+            'description': "Paste the full blockquote from Twitter's 'Embed Tweet'. Example: <blockquote class=\"twitter-tweet\"><p lang=\"en\" dir=\"ltr\">Tweet text...</p>&mdash; Name (@handle) <a href=\"https://twitter.com/.../status/...\">Date</a></blockquote>"
+        }),
+    )
+
+    def has_embed_html(self, obj):
+        return bool(obj.embed_html)
+    has_embed_html.boolean = True
+    has_embed_html.short_description = 'Embed HTML'
 
