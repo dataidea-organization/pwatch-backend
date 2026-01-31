@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
-from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote
+from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPoll
 
 
 @admin.register(XSpace)
@@ -139,4 +139,13 @@ class PollVoteAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     ordering = ['-created_at']
     readonly_fields = ['created_at']
+
+
+@admin.register(XPoll)
+class XPollAdmin(admin.ModelAdmin):
+    list_display = ['poll', 'x_poll_url', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['poll__title', 'x_poll_url']
+    raw_id_fields = ['poll']
+    readonly_fields = ['created_at', 'updated_at']
 

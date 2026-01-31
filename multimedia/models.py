@@ -218,3 +218,30 @@ class PollVote(models.Model):
 
     def __str__(self):
         return f"Vote for {self.option.text} in {self.poll.title}"
+
+
+class XPoll(models.Model):
+    """
+    Links a Poll to an X (Twitter) poll. Create the poll on X first, then create
+    a Poll here with the same question/options and add an XPoll with the X post URL.
+    Voting is allowed on both X and here; results here are independent.
+    """
+    poll = models.OneToOneField(
+        Poll,
+        on_delete=models.CASCADE,
+        related_name='x_poll_link',
+        help_text="The poll on this site that mirrors the X poll"
+    )
+    x_poll_url = models.URLField(
+        help_text="URL to the X (Twitter) post where this poll was created. Users can view or vote on X too."
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'X Poll'
+        verbose_name_plural = 'X Polls'
+
+    def __str__(self):
+        return f"X poll: {self.poll.title}"
