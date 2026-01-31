@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             name='PageHeroImage',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('page_slug', models.CharField(choices=[('bills', 'Bills Tracker'), ('mps', 'MPs Tracker'), ('loans', 'Loans Tracker'), ('budgets', 'Budgets Tracker'), ('hansards', 'Hansards Tracker'), ('order-paper', 'Order Paper Tracker'), ('committees', 'Committees'), ('statements', 'Statements'), ('reports-briefs', 'Reports & Briefs'), ('podcast', 'Podcast'), ('gallery', 'Gallery'), ('x-spaces', 'X Spaces'), ('citizens-voice', 'Citizens Voice')], help_text='The page this hero image is for', max_length=50, unique=True)),
+                ('page_slug', models.CharField(choices=[('about', 'About Us'), ('contact', 'Contact Us'), ('bills', 'Bills Tracker'), ('mps', 'MPs Tracker'), ('loans', 'Loans Tracker'), ('budgets', 'Budgets Tracker'), ('hansards', 'Hansards Tracker'), ('order-paper', 'Order Paper Tracker'), ('committees', 'Committees'), ('statements', 'Statements'), ('reports-briefs', 'Reports & Briefs'), ('podcast', 'Podcast'), ('gallery', 'Gallery'), ('x-spaces', 'X Spaces'), ('citizens-voice', 'Citizens Voice')], help_text='The page this hero image is for', max_length=50, unique=True)),
                 ('page_name', models.CharField(blank=True, help_text='Display name for the page (auto-filled from slug if empty)', max_length=100)),
                 ('image', models.ImageField(help_text='Hero image for this page', upload_to='page_heroes/')),
                 ('alt_text', models.CharField(blank=True, help_text='Alternative text for accessibility', max_length=200)),

@@ -7,6 +7,8 @@ class PageHeroImage(models.Model):
     Allows admin to set custom hero images for different pages
     """
     PAGE_CHOICES = [
+        ('about', 'About Us'),
+        ('contact', 'Contact Us'),
         ('bills', 'Bills Tracker'),
         ('mps', 'MPs Tracker'),
         ('loans', 'Loans Tracker'),
