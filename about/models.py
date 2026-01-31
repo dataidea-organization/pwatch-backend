@@ -61,6 +61,11 @@ class WhoWeAre(models.Model):
     title = models.CharField(max_length=200, default="Who We Are")
     content = RichTextField(help_text="Content for the Who We Are section")
     image = models.ImageField(upload_to='about/', blank=True, null=True, help_text="Optional image for the section")
+    youtube_video_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text="Optional YouTube video URL. If set, the video is shown instead of the image on the About page."
+    )
     is_active = models.BooleanField(default=True, help_text="Whether this section is active")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -87,6 +92,11 @@ class OurStory(models.Model):
     title = models.CharField(max_length=200, default="Our Story")
     content = RichTextField(help_text="Content for the Our Story section")
     image = models.ImageField(upload_to='about/', blank=True, null=True, help_text="Optional image for the section")
+    youtube_video_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text="Optional YouTube video URL. If set, the video is shown instead of the image on the About page."
+    )
     is_active = models.BooleanField(default=True, help_text="Whether this section is active")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

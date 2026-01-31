@@ -54,7 +54,7 @@ class WhoWeAreAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Content', {
-            'fields': ('title', 'content', 'image')
+            'fields': ('title', 'content', 'image', 'youtube_video_url')
         }),
         ('Display', {
             'fields': ('is_active',)
@@ -72,7 +72,7 @@ class OurStoryAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Content', {
-            'fields': ('title', 'content', 'image')
+            'fields': ('title', 'content', 'image', 'youtube_video_url')
         }),
         ('Display', {
             'fields': ('is_active',)
