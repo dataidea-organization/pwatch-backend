@@ -1,6 +1,7 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from main.utils import get_full_media_url
-from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote
+from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed
 
 
 class XSpaceSerializer(serializers.ModelSerializer):
@@ -135,17 +136,24 @@ class PollSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
+    def _get_x_poll_link(self, obj):
+        """Return XPoll for this poll or None. Safe when no XPoll exists (reverse OneToOne raises)."""
+        try:
+            return obj.x_poll_link
+        except ObjectDoesNotExist:
+            return None
+
     def get_is_x_poll(self, obj):
-        return hasattr(obj, 'x_poll_link')
+        return self._get_x_poll_link(obj) is not None
 
     def get_x_poll_url(self, obj):
-        if hasattr(obj, 'x_poll_link'):
-            return obj.x_poll_link.x_poll_url
-        return None
+        link = self._get_x_poll_link(obj)
+        return link.x_poll_url if link else None
 
     def get_x_poll_embed_html(self, obj):
-        if hasattr(obj, 'x_poll_link') and getattr(obj.x_poll_link, 'embed_html', None):
-            return obj.x_poll_link.embed_html
+        link = self._get_x_poll_link(obj)
+        if link and link.embed_html:
+            return link.embed_html
         return None
 
 
@@ -159,4 +167,10 @@ class PollVoteSerializer(serializers.ModelSerializer):
             'created_at',
         ]
         read_only_fields = ['created_at']
+
+
+class XPollEmbedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = XPollEmbed
+        fields = ['id', 'title', 'embed_html', 'order', 'created_at', 'updated_at']
 

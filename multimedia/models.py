@@ -249,3 +249,29 @@ class XPoll(models.Model):
 
     def __str__(self):
         return f"X poll: {self.poll.title}"
+
+
+class XPollEmbed(models.Model):
+    """
+    Standalone X (Twitter) poll embed. Paste the full embed code from Twitter
+    (blockquote + script); we store and display the blockquote part. Not related to Poll.
+    """
+    title = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Optional label for admin (e.g. poll topic)"
+    )
+    embed_html = models.TextField(
+        help_text="Paste the full embed from Twitter: the <blockquote class=\"twitter-tweet\">...</blockquote> part (script is loaded on the page)."
+    )
+    order = models.PositiveIntegerField(default=0, help_text="Display order (lower first)")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+        verbose_name = 'X Poll Embed'
+        verbose_name_plural = 'X Poll Embeds'
+
+    def __str__(self):
+        return self.title or f"X Poll Embed #{self.id}"

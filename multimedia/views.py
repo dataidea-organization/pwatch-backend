@@ -4,8 +4,12 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
-from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote
-from .serializers import XSpaceSerializer, PodcastSerializer, GallerySerializer, PollSerializer, PollOptionSerializer, PollVoteSerializer
+from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed
+from .serializers import (
+    XSpaceSerializer, PodcastSerializer, GallerySerializer,
+    PollSerializer, PollOptionSerializer, PollVoteSerializer,
+    XPollEmbedSerializer,
+)
 
 
 class XSpacePagination(PageNumberPagination):
@@ -198,3 +202,10 @@ class PollViewSet(viewsets.ModelViewSet):
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+
+class XPollEmbedViewSet(viewsets.ReadOnlyModelViewSet):
+    """List and retrieve X (Twitter) poll embeds. Standalone, not linked to Poll."""
+    queryset = XPollEmbed.objects.all()
+    serializer_class = XPollEmbedSerializer
+    pagination_class = None

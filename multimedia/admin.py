@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
-from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPoll
+from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPoll, XPollEmbed
 
 
 @admin.register(XSpace)
@@ -162,4 +162,13 @@ class XPollAdmin(admin.ModelAdmin):
         return bool(obj.embed_html)
     has_embed_html.boolean = True
     has_embed_html.short_description = 'Embed HTML'
+
+
+@admin.register(XPollEmbed)
+class XPollEmbedAdmin(admin.ModelAdmin):
+    list_display = ['id', 'title', 'order', 'created_at']
+    list_editable = ['order']
+    search_fields = ['title', 'embed_html']
+    ordering = ['order', '-created_at']
+    fields = ('title', 'embed_html', 'order')
 
