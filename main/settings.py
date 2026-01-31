@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'multimedia',
     'trackers',
     'chatbot',
+    'settings',
     'rest_framework',
     'corsheaders',
 ]

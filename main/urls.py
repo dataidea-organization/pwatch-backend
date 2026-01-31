@@ -36,6 +36,7 @@ urlpatterns = [
     path('api/about/', include('about.urls')),
     path('api/home/', include('home.urls')),
     path('api/chatbot/', include('chatbot.urls')),
+    path('api/settings/', include('settings.urls')),
 ]
 
 # Serve media files in development
