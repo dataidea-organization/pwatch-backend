@@ -59,9 +59,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -172,7 +172,7 @@ CKEDITOR_UPLOAD_PATH = 'ckeditor/'
 CKEDITOR_IMAGE_BACKEND = 'pillow'
 CKEDITOR_ALLOW_NONIMAGE_FILES = True  # Allow audio/video files
 
-# CORS settings
+# CORS settings - CorsMiddleware must be as high as possible (see MIDDLEWARE above)
 CORS_ALLOWED_ORIGINS = [
     "https://pwatch-backend-production.up.railway.app",
     "https://main.d5as01blzhon4.amplifyapp.com",
@@ -182,6 +182,25 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3001",
     "http://127.0.0.1:3001",
 ]
+CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "origin",
+    "user-agent",
+    "x-requested-with",
+]
+CORS_EXPOSE_HEADERS = []
 
 CSRF_TRUSTED_ORIGINS = [
     "https://pwatch-backend-production.up.railway.app",

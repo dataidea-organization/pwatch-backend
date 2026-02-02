@@ -19,7 +19,6 @@ class News(models.Model):
     ]
 
     CATEGORY_CHOICES = [
-        ('latest_blogs', 'Latest on Blogs'),
         ('news_updates', 'News and Updates'),
         ('parliament', 'Parliament News'),
         ('governance', 'Governance'),

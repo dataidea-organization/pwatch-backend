@@ -3,6 +3,8 @@ import re
 from pathlib import Path
 from django.conf import settings
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -87,10 +89,12 @@ def chunk_text(text, chunk_size=8000, overlap=200):
     return chunks
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ChatbotView(APIView):
     """
     Chatbot endpoint that answers questions based on documents in the media folder.
     Uses Claude API for intelligent responses.
+    Exempt from CSRF so cross-origin (CORS) requests from the frontend are allowed.
     """
     
     def get_client_ip(self, request):
