@@ -361,7 +361,6 @@ class OrderPaper(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
     class Meta:
         verbose_name = 'Order Paper'
         ordering = ['-created_at']
@@ -376,23 +375,9 @@ class Committee(models.Model):
     begin_date = models.DateField(null=True, blank=True, help_text="Committee term begin date")
     end_date = models.DateField(null=True, blank=True, help_text="Committee term end date")
 
-    # Leadership
-    chairperson = models.ForeignKey(
-        MP,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='committees_chaired',
-        help_text="Committee chairperson"
-    )
-    deputy_chairperson = models.ForeignKey(
-        MP,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='committees_deputy_chaired',
-        help_text="Committee deputy chairperson"
-    )
+    # Leadership (plain text entry)
+    chairperson = models.CharField(max_length=200, blank=True, help_text="Committee chairperson")
+    deputy_chairperson = models.CharField(max_length=200, blank=True, help_text="Committee deputy chairperson")
 
     # Members
     members = models.ManyToManyField(

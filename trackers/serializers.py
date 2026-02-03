@@ -335,8 +335,6 @@ class CommitteeDocumentSerializer(serializers.ModelSerializer):
 
 class CommitteeListSerializer(serializers.ModelSerializer):
     """Simplified serializer for Committee listing"""
-    chairperson_name = serializers.CharField(source='chairperson.name', read_only=True)
-    deputy_chairperson_name = serializers.CharField(source='deputy_chairperson.name', read_only=True)
     member_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -347,8 +345,8 @@ class CommitteeListSerializer(serializers.ModelSerializer):
             'description',
             'begin_date',
             'end_date',
-            'chairperson_name',
-            'deputy_chairperson_name',
+            'chairperson',
+            'deputy_chairperson',
             'member_count',
             'created_at',
             'updated_at',
@@ -360,8 +358,6 @@ class CommitteeListSerializer(serializers.ModelSerializer):
 
 class CommitteeDetailSerializer(serializers.ModelSerializer):
     """Full serializer for Committee detail view"""
-    chairperson = MPListSerializer(read_only=True)
-    deputy_chairperson = MPListSerializer(read_only=True)
     members = MPListSerializer(many=True, read_only=True)
     documents = CommitteeDocumentSerializer(many=True, read_only=True)
 

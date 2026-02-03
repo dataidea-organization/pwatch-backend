@@ -327,10 +327,10 @@ class CommitteeViewSet(viewsets.ModelViewSet):
 
     Provides committee information including chairperson, deputy, members, and documents
     """
-    queryset = Committee.objects.select_related('chairperson', 'deputy_chairperson').prefetch_related('members', 'documents')
+    queryset = Committee.objects.prefetch_related('members', 'documents')
     pagination_class = CommitteePagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['title', 'description', 'chairperson__name', 'deputy_chairperson__name']
+    search_fields = ['title', 'description', 'chairperson', 'deputy_chairperson']
     ordering_fields = ['title', 'created_at']
     ordering = ['title']
 

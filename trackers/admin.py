@@ -198,7 +198,7 @@ class CommitteeDocumentInline(admin.TabularInline):
 class CommitteeAdmin(admin.ModelAdmin):
     list_display = ['title', 'chairperson', 'deputy_chairperson', 'begin_date', 'end_date', 'created_at']
     list_filter = ['begin_date', 'end_date', 'created_at']
-    search_fields = ['title', 'description', 'chairperson__name', 'deputy_chairperson__name']
+    search_fields = ['title', 'description', 'chairperson', 'deputy_chairperson']
     date_hierarchy = 'created_at'
     ordering = ['title']
     filter_horizontal = ['members']
