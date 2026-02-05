@@ -1,6 +1,19 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import PageHeroImage
+from .models import PageHeroImage, CitizensVoiceFeedbackLinks
+
+
+@admin.register(CitizensVoiceFeedbackLinks)
+class CitizensVoiceFeedbackLinksAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'updated_at']
+    readonly_fields = ['updated_at']
+
+    def has_add_permission(self, request):
+        # Allow only one instance (singleton)
+        return not CitizensVoiceFeedbackLinks.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(PageHeroImage)

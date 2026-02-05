@@ -67,3 +67,33 @@ class PageHeroImage(models.Model):
 
     def __str__(self):
         return f"{self.page_name or self.page_slug} Hero Image"
+
+
+class CitizensVoiceFeedbackLinks(models.Model):
+    """
+    Singleton-style config for Citizens Voice page: Google form URLs and engagement links.
+    Admin configures one instance; the API returns these URLs for the frontend feedback cards.
+    """
+    ask_mp_form_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="Google form URL for 'Ask your MP'"
+    )
+    comment_bill_form_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="Google form URL for 'Comment on a bill'"
+    )
+    feedback_law_form_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="Google form URL for 'Feedback on a law'"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Citizens Voice feedback links"
+        verbose_name_plural = "Citizens Voice feedback links"
+
+    def __str__(self):
+        return "Citizens Voice feedback links"

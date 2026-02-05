@@ -1,9 +1,27 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from .models import PageHeroImage
-from .serializers import PageHeroImageSerializer
+from .models import PageHeroImage, CitizensVoiceFeedbackLinks
+from .serializers import PageHeroImageSerializer, CitizensVoiceFeedbackLinksSerializer
+
+
+class CitizensVoiceFeedbackLinksView(APIView):
+    """
+    GET /api/settings/citizens-voice-feedback/
+    Returns the three Google form URLs for the Citizens Voice feedback cards.
+    If no config exists, returns empty strings for each URL.
+    """
+    def get(self, request):
+        instance = CitizensVoiceFeedbackLinks.objects.first()
+        if not instance:
+            return Response({
+                'ask_mp_form_url': '',
+                'comment_bill_form_url': '',
+                'feedback_law_form_url': '',
+            })
+        serializer = CitizensVoiceFeedbackLinksSerializer(instance)
+        return Response(serializer.data)
 
 
 class PageHeroImageViewSet(viewsets.ReadOnlyModelViewSet):

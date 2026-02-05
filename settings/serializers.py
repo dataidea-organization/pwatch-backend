@@ -1,6 +1,12 @@
 from rest_framework import serializers
-from .models import PageHeroImage
+from .models import PageHeroImage, CitizensVoiceFeedbackLinks
 from main.utils import get_full_media_url
+
+
+class CitizensVoiceFeedbackLinksSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CitizensVoiceFeedbackLinks
+        fields = ['ask_mp_form_url', 'comment_bill_form_url', 'feedback_law_form_url']
 
 
 class PageHeroImageSerializer(serializers.ModelSerializer):
