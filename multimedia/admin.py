@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
+import nested_admin
 from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed, Trivia, TriviaQuestion, TriviaOption
 
 
@@ -151,22 +152,23 @@ class XPollEmbedAdmin(admin.ModelAdmin):
     fields = ('title', 'embed_html', 'order')
 
 
-class TriviaOptionInline(admin.TabularInline):
+class TriviaOptionInline(nested_admin.NestedTabularInline):
     model = TriviaOption
     extra = 2
     ordering = ['order']
     fields = ['order', 'text', 'is_correct']
 
 
-class TriviaQuestionInline(admin.TabularInline):
+class TriviaQuestionInline(nested_admin.NestedTabularInline):
     model = TriviaQuestion
     extra = 1
     ordering = ['order']
     fields = ['order', 'question_text', 'answer_text']
+    inlines = [TriviaOptionInline]
 
 
 @admin.register(Trivia)
-class TriviaAdmin(admin.ModelAdmin):
+class TriviaAdmin(nested_admin.NestedModelAdmin):
     list_display = ['title', 'order', 'is_active', 'question_count_display', 'created_at']
     list_filter = ['is_active', 'created_at']
     search_fields = ['title', 'description']
