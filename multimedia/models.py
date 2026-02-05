@@ -276,12 +276,13 @@ class Trivia(models.Model):
 class TriviaQuestion(models.Model):
     """
     A single question in a trivia set. Shown one per slide in card-slide format.
+    Can have multiple choice options (TriviaOption) or just answer_text for reveal-style questions.
     """
     trivia = models.ForeignKey(Trivia, on_delete=models.CASCADE, related_name='questions')
     question_text = models.TextField(help_text="The question shown on the card")
     answer_text = models.TextField(
         blank=True,
-        help_text="Optional answer to reveal (e.g. for quiz-style trivia)"
+        help_text="Optional answer to reveal (used if no options provided, or as explanation)"
     )
     order = models.PositiveIntegerField(default=0, help_text="Order within the trivia")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -293,3 +294,22 @@ class TriviaQuestion(models.Model):
 
     def __str__(self):
         return self.question_text[:50] + ('...' if len(self.question_text) > 50 else '')
+
+
+class TriviaOption(models.Model):
+    """
+    Multiple choice option for a trivia question. One option should be marked as correct.
+    """
+    question = models.ForeignKey(TriviaQuestion, on_delete=models.CASCADE, related_name='options')
+    text = models.CharField(max_length=500, help_text="Option text")
+    is_correct = models.BooleanField(default=False, help_text="Whether this is the correct answer")
+    order = models.PositiveIntegerField(default=0, help_text="Display order")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+        verbose_name = 'Trivia Option'
+        verbose_name_plural = 'Trivia Options'
+
+    def __str__(self):
+        return f"{self.question.question_text[:30]}... - {self.text}"

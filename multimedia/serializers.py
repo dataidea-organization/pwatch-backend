@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from main.utils import get_full_media_url
-from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed, Trivia, TriviaQuestion
+from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed, Trivia, TriviaQuestion, TriviaOption
 
 
 class XSpaceSerializer(serializers.ModelSerializer):
@@ -147,10 +147,18 @@ class XPollEmbedSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'embed_html', 'order', 'created_at', 'updated_at']
 
 
+class TriviaOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TriviaOption
+        fields = ['id', 'text', 'is_correct', 'order', 'created_at']
+
+
 class TriviaQuestionSerializer(serializers.ModelSerializer):
+    options = TriviaOptionSerializer(many=True, read_only=True)
+    
     class Meta:
         model = TriviaQuestion
-        fields = ['id', 'question_text', 'answer_text', 'order', 'created_at']
+        fields = ['id', 'question_text', 'answer_text', 'options', 'order', 'created_at']
 
 
 class TriviaListSerializer(serializers.ModelSerializer):

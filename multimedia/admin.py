@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
-from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed, Trivia, TriviaQuestion
+from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed, Trivia, TriviaQuestion, TriviaOption
 
 
 @admin.register(XSpace)
@@ -151,6 +151,13 @@ class XPollEmbedAdmin(admin.ModelAdmin):
     fields = ('title', 'embed_html', 'order')
 
 
+class TriviaOptionInline(admin.TabularInline):
+    model = TriviaOption
+    extra = 2
+    ordering = ['order']
+    fields = ['order', 'text', 'is_correct']
+
+
 class TriviaQuestionInline(admin.TabularInline):
     model = TriviaQuestion
     extra = 1
@@ -182,12 +189,30 @@ class TriviaAdmin(admin.ModelAdmin):
 
 @admin.register(TriviaQuestion)
 class TriviaQuestionAdmin(admin.ModelAdmin):
-    list_display = ['trivia', 'order', 'question_preview', 'created_at']
+    list_display = ['trivia', 'order', 'question_preview', 'option_count', 'created_at']
     list_filter = ['trivia', 'created_at']
     search_fields = ['question_text', 'answer_text', 'trivia__title']
     ordering = ['trivia', 'order']
+    inlines = [TriviaOptionInline]
 
     def question_preview(self, obj):
         return obj.question_text[:60] + ('...' if len(obj.question_text) > 60 else '')
     question_preview.short_description = 'Question'
+
+    def option_count(self, obj):
+        return obj.options.count()
+    option_count.short_description = 'Options'
+
+
+@admin.register(TriviaOption)
+class TriviaOptionAdmin(admin.ModelAdmin):
+    list_display = ['question', 'text_preview', 'is_correct', 'order', 'created_at']
+    list_filter = ['is_correct', 'question__trivia', 'created_at']
+    search_fields = ['text', 'question__question_text', 'question__trivia__title']
+    ordering = ['question', 'order']
+    list_editable = ['is_correct', 'order']
+
+    def text_preview(self, obj):
+        return obj.text[:50] + ('...' if len(obj.text) > 50 else '')
+    text_preview.short_description = 'Option'
 
