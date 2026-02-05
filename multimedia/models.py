@@ -244,3 +244,52 @@ class XPollEmbed(models.Model):
 
     def __str__(self):
         return self.title or f"X Poll Embed #{self.id}"
+
+
+class Trivia(models.Model):
+    """
+    Trivia set for Citizens Voice. Admin creates a trivia with a title/description;
+    users open it and go through questions in a card-slide format.
+    """
+    title = models.CharField(max_length=200, help_text="Title of the trivia set", db_index=True)
+    description = models.TextField(blank=True, help_text="Short description shown on the card")
+    image = models.ImageField(
+        upload_to='trivia/',
+        blank=True,
+        null=True,
+        help_text="Optional cover image for the trivia card"
+    )
+    order = models.PositiveIntegerField(default=0, help_text="Display order (lower first)")
+    is_active = models.BooleanField(default=True, help_text="Show on Citizens Voice page")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+        verbose_name = 'Trivia'
+        verbose_name_plural = 'Trivia'
+
+    def __str__(self):
+        return self.title
+
+
+class TriviaQuestion(models.Model):
+    """
+    A single question in a trivia set. Shown one per slide in card-slide format.
+    """
+    trivia = models.ForeignKey(Trivia, on_delete=models.CASCADE, related_name='questions')
+    question_text = models.TextField(help_text="The question shown on the card")
+    answer_text = models.TextField(
+        blank=True,
+        help_text="Optional answer to reveal (e.g. for quiz-style trivia)"
+    )
+    order = models.PositiveIntegerField(default=0, help_text="Order within the trivia")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+        verbose_name = 'Trivia Question'
+        verbose_name_plural = 'Trivia Questions'
+
+    def __str__(self):
+        return self.question_text[:50] + ('...' if len(self.question_text) > 50 else '')

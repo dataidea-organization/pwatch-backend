@@ -5,11 +5,12 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
-from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed
+from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed, Trivia, TriviaQuestion
 from .serializers import (
     XSpaceSerializer, PodcastSerializer, GallerySerializer,
     PollSerializer, PollOptionSerializer, PollVoteSerializer,
     XPollEmbedSerializer,
+    TriviaListSerializer, TriviaDetailSerializer,
 )
 
 
@@ -217,3 +218,17 @@ class XPollEmbedViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = XPollEmbed.objects.all()
     serializer_class = XPollEmbedSerializer
     pagination_class = None
+
+
+class TriviaViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    List trivia sets (for cards) and retrieve a single trivia with questions (for play page).
+    Only active trivia are listed.
+    """
+    queryset = Trivia.objects.filter(is_active=True).order_by('order', '-created_at')
+    pagination_class = None
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return TriviaDetailSerializer
+        return TriviaListSerializer

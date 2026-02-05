@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
-from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed
+from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed, Trivia, TriviaQuestion
 
 
 @admin.register(XSpace)
@@ -149,4 +149,45 @@ class XPollEmbedAdmin(admin.ModelAdmin):
     search_fields = ['title', 'embed_html']
     ordering = ['order', '-created_at']
     fields = ('title', 'embed_html', 'order')
+
+
+class TriviaQuestionInline(admin.TabularInline):
+    model = TriviaQuestion
+    extra = 1
+    ordering = ['order']
+    fields = ['order', 'question_text', 'answer_text']
+
+
+@admin.register(Trivia)
+class TriviaAdmin(admin.ModelAdmin):
+    list_display = ['title', 'order', 'is_active', 'question_count_display', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['title', 'description']
+    list_editable = ['order', 'is_active']
+    ordering = ['order', '-created_at']
+    inlines = [TriviaQuestionInline]
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'description', 'image')
+        }),
+        ('Display', {
+            'fields': ('order', 'is_active')
+        }),
+    )
+
+    def question_count_display(self, obj):
+        return obj.questions.count()
+    question_count_display.short_description = 'Questions'
+
+
+@admin.register(TriviaQuestion)
+class TriviaQuestionAdmin(admin.ModelAdmin):
+    list_display = ['trivia', 'order', 'question_preview', 'created_at']
+    list_filter = ['trivia', 'created_at']
+    search_fields = ['question_text', 'answer_text', 'trivia__title']
+    ordering = ['trivia', 'order']
+
+    def question_preview(self, obj):
+        return obj.question_text[:60] + ('...' if len(obj.question_text) > 60 else '')
+    question_preview.short_description = 'Question'
 

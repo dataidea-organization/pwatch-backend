@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from main.utils import get_full_media_url
-from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed
+from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote, XPollEmbed, Trivia, TriviaQuestion
 
 
 class XSpaceSerializer(serializers.ModelSerializer):
@@ -145,4 +145,43 @@ class XPollEmbedSerializer(serializers.ModelSerializer):
     class Meta:
         model = XPollEmbed
         fields = ['id', 'title', 'embed_html', 'order', 'created_at', 'updated_at']
+
+
+class TriviaQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TriviaQuestion
+        fields = ['id', 'question_text', 'answer_text', 'order', 'created_at']
+
+
+class TriviaListSerializer(serializers.ModelSerializer):
+    """For listing trivia cards (no questions)."""
+    image = serializers.SerializerMethodField()
+    question_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Trivia
+        fields = ['id', 'title', 'description', 'image', 'order', 'question_count', 'created_at', 'updated_at']
+
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
+        return None
+
+    def get_question_count(self, obj):
+        return obj.questions.count()
+
+
+class TriviaDetailSerializer(serializers.ModelSerializer):
+    """For trivia play page (includes questions)."""
+    image = serializers.SerializerMethodField()
+    questions = TriviaQuestionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Trivia
+        fields = ['id', 'title', 'description', 'image', 'order', 'questions', 'created_at', 'updated_at']
+
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
+        return None
 
