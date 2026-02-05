@@ -10,7 +10,7 @@ django-cors-headers==4.9.0
 django-filter==24.3
 django-js-asset==3.1.2
 djangorestframework==3.16.1
-django-nested-admin==0.22.0
+django-nested-admin
 docstring_parser==0.17.0
 gunicorn==23.0.0
 h11==0.16.0
