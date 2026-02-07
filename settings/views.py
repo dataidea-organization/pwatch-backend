@@ -2,8 +2,8 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from .models import PageHeroImage, CitizensVoiceFeedbackLinks
-from .serializers import PageHeroImageSerializer, CitizensVoiceFeedbackLinksSerializer
+from .models import PageHeroImage, CitizensVoiceFeedbackLinks, FooterDocuments
+from .serializers import PageHeroImageSerializer, CitizensVoiceFeedbackLinksSerializer, FooterDocumentsSerializer
 
 
 class CitizensVoiceFeedbackLinksView(APIView):
@@ -49,3 +49,21 @@ class PageHeroImageViewSet(viewsets.ReadOnlyModelViewSet):
                 {"detail": "No hero image found for this page."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+class FooterDocumentsView(APIView):
+    """
+    GET /api/settings/footer-documents/
+    Returns the file URLs for Terms of Service, Privacy Policy, and Accessibility documents.
+    If no config exists, returns null for each document URL.
+    """
+    def get(self, request):
+        instance = FooterDocuments.objects.first()
+        if not instance:
+            return Response({
+                'terms_of_service': None,
+                'privacy_policy': None,
+                'accessibility': None,
+            })
+        serializer = FooterDocumentsSerializer(instance)
+        return Response(serializer.data)

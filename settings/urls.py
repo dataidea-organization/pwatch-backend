@@ -1,11 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import PageHeroImageViewSet, CitizensVoiceFeedbackLinksView
+from .views import PageHeroImageViewSet, CitizensVoiceFeedbackLinksView, FooterDocumentsView
 
 router = DefaultRouter()
 router.register(r'page-hero-images', PageHeroImageViewSet, basename='page-hero-image')
 
 urlpatterns = [
     path('citizens-voice-feedback/', CitizensVoiceFeedbackLinksView.as_view()),
+    path('footer-documents/', FooterDocumentsView.as_view()),
     path('', include(router.urls)),
 ]

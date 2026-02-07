@@ -97,3 +97,36 @@ class CitizensVoiceFeedbackLinks(models.Model):
 
     def __str__(self):
         return "Citizens Voice feedback links"
+
+
+class FooterDocuments(models.Model):
+    """
+    Singleton-style config for Footer documents: Terms of Service, Privacy Policy, and Accessibility.
+    Admin uploads PDF or document files; the API returns these file URLs for the frontend footer links.
+    """
+    terms_of_service = models.FileField(
+        upload_to='footer_documents/',
+        blank=True,
+        null=True,
+        help_text="Terms of Service document (PDF or other document format)"
+    )
+    privacy_policy = models.FileField(
+        upload_to='footer_documents/',
+        blank=True,
+        null=True,
+        help_text="Privacy Policy document (PDF or other document format)"
+    )
+    accessibility = models.FileField(
+        upload_to='footer_documents/',
+        blank=True,
+        null=True,
+        help_text="Accessibility statement document (PDF or other document format)"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Footer Documents"
+        verbose_name_plural = "Footer Documents"
+
+    def __str__(self):
+        return "Footer Documents"
