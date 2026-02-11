@@ -1,6 +1,8 @@
 mps.json
 fix_json.py
 media
+*.xml
+.idea
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
