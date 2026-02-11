@@ -7,9 +7,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
-from .models import Explainers, Report, PartnerPublication, Statement
+from .models import Explainers, Report, PartnerPublication, Statement, Publication
 from .serializers import (
     ExplainersSerializer, ReportSerializer, PartnerPublicationSerializer, StatementSerializer,
+    PublicationSerializer,
     HomeSummaryExplainerSerializer, HomeSummaryReportSerializer,
     HomeSummaryPartnerPublicationSerializer, HomeSummaryStatementSerializer
 )
@@ -79,6 +80,22 @@ class StatementViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
     ordering_fields = ['created_at', 'name']
     ordering = ['-created_at']
+
+
+class PublicationViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Publications
+
+    Provides research publications, policy briefs, and reports
+    """
+    queryset = Publication.objects.all()
+    serializer_class = PublicationSerializer
+    pagination_class = ResourcePagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['title', 'description', 'category']
+    ordering_fields = ['created_at', 'date', 'title']
+    ordering = ['-created_at']
+    filterset_fields = ['type', 'category', 'featured']
 
 
 # Home page resources summary endpoint - optimized and cached

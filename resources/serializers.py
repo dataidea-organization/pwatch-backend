@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from main.utils import get_full_media_url
-from .models import Explainers, Report, PartnerPublication, Statement
+from .models import Explainers, Report, PartnerPublication, Statement, Publication
 
 
 class ExplainersSerializer(serializers.ModelSerializer):
@@ -148,4 +148,38 @@ class HomeSummaryStatementSerializer(serializers.ModelSerializer):
     def get_file(self, obj):
         if obj.file:
             return get_full_media_url(obj.file.url)
+        return None
+
+
+class PublicationSerializer(serializers.ModelSerializer):
+    """Serializer for Publications (research publications, policy briefs, reports)"""
+    pdf = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Publication
+        fields = [
+            'id',
+            'title',
+            'type',
+            'date',
+            'description',
+            'category',
+            'url',
+            'pdf',
+            'image',
+            'featured',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+    def get_pdf(self, obj):
+        if obj.pdf:
+            return get_full_media_url(obj.pdf.url)
+        return None
+
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
         return None
