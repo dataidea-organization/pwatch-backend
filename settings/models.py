@@ -22,6 +22,7 @@ class PageHeroImage(models.Model):
         ('gallery', 'Gallery'),
         ('x-spaces', 'X Spaces'),
         ('citizens-voice', 'Citizens Voice'),
+        ('debt', 'National Debt Tracker'),
     ]
 
     page_slug = models.CharField(
