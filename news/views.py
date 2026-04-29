@@ -29,6 +29,12 @@ class NewsPagination(PageNumberPagination):
     max_page_size = 100
 
 
+class HotInParliamentPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class NewsViewSet(viewsets.ModelViewSet):
     """
     ViewSet for News model
@@ -122,11 +128,15 @@ class HotInParliamentView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        paginator = HotInParliamentPagination()
+        page_number = request.query_params.get('page', '1')
+        page_size = request.query_params.get('page_size', str(paginator.page_size))
+
         # Allow bypassing cache with ?nocache=1 parameter
         bypass_cache = request.query_params.get('nocache') == '1'
         
         if not bypass_cache:
-            cache_key = 'hot_in_parliament'
+            cache_key = f'hot_in_parliament:page={page_number}:page_size={page_size}'
             cached_data = cache.get(cache_key)
             
             if cached_data is not None:
@@ -138,11 +148,10 @@ class HotInParliamentView(APIView):
         ).select_related('author').only(
             'id', 'title', 'slug', 'author', 'content', 'image', 'link_url', 'published_date', 'view_count'
         ).order_by('order', '-published_date', '-created_at')
-        
-        # Serialize data
-        data = {
-            'results': HotInParliamentSerializer(hot_items, many=True).data
-        }
+
+        paginated_items = paginator.paginate_queryset(hot_items, request, view=self)
+        serializer = HotInParliamentSerializer(paginated_items, many=True)
+        data = paginator.get_paginated_response(serializer.data).data
         
         # Cache the response (unless bypassing)
         if not bypass_cache:

@@ -30,9 +30,7 @@ DEBUG = True if config('DEBUG', default=True) == 'True' else False
 
 ALLOWED_HOSTS = ["*"]
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'nested_admin',
     'django.contrib.admin',
