@@ -29,7 +29,7 @@ class BillViewSet(viewsets.ModelViewSet):
     filterset_fields = ['bill_type', 'status', 'year_introduced']
     search_fields = ['title', 'mover', 'assigned_to']
     ordering_fields = ['created_at', 'year_introduced', 'title', 'bill_type', 'status', 'mover']
-    ordering = ['-created_at']
+    ordering = ['-year_introduced']
 
     def get_serializer_class(self):
         if self.action == 'list':
