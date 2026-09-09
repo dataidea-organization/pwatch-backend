@@ -1,10 +1,7 @@
 from django.db import models
-from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.text import slugify
-from django.core.cache import cache
 from ckeditor.fields import RichTextField
 
 
@@ -70,58 +67,3 @@ class NewsComment(models.Model):
 
     def __str__(self):
         return f'Comment by {self.author_name} on {self.news.title}'
-
-
-class HotInParliament(models.Model):
-    """Model for 'Hot in Parliament' items displayed on the home page"""
-    title = models.CharField(max_length=500, db_index=True)
-    slug = models.SlugField(max_length=550, unique=True, blank=True, db_index=True)
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='hot_in_parliament', db_index=True)
-    content = RichTextField()
-    image = models.ImageField(upload_to='hot_in_parliament/', blank=True, null=True)
-    link_url = models.URLField(blank=True, null=True, help_text="Optional link to related article or external resource")
-    is_active = models.BooleanField(default=True, help_text="Whether this item should be displayed")
-    order = models.PositiveIntegerField(default=0, help_text="Order for display (lower numbers appear first)")
-    published_date = models.DateField(default=default_published_date)
-    view_count = models.PositiveIntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = 'Hot in Parliament'
-        verbose_name_plural = 'Hot in Parliament'
-        ordering = ['order', '-published_date', '-created_at']
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.title
-
-
-class HotInParliamentComment(models.Model):
-    """Anonymous comment on a Latest in Parliament item. No login required."""
-    hot_item = models.ForeignKey(HotInParliament, on_delete=models.CASCADE, related_name='comments', db_index=True)
-    author_name = models.CharField(max_length=255)
-    author_email = models.EmailField()
-    body = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_approved = models.BooleanField(default=True, help_text="Approved comments are shown publicly")
-
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = 'Hot in Parliament comment'
-        verbose_name_plural = 'Hot in Parliament comments'
-
-    def __str__(self):
-        return f'Comment by {self.author_name} on {self.hot_item.title}'
-
-
-# Signal to clear cache when HotInParliament items are saved or deleted
-@receiver(post_save, sender=HotInParliament)
-@receiver(post_delete, sender=HotInParliament)
-def clear_hot_in_parliament_cache(sender, instance, **kwargs):
-    """Clear the cache when Hot in Parliament items are modified"""
-    cache.delete('hot_in_parliament')

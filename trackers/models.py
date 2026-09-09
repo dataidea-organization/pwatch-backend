@@ -2,6 +2,11 @@ from django.db import models
 from ckeditor.fields import RichTextField
 
 
+def normalize_district_name(name: str) -> str:
+    collapsed = ' '.join((name or '').split())
+    return collapsed.title() if collapsed else 'N/A'
+
+
 class Bill(models.Model):
     BILL_TYPE_CHOICES = [
         ('government', 'Government'),
@@ -83,6 +88,34 @@ class ParliamentTerm(models.Model):
         return f"{self.name} ({self.start_year}-{self.end_year})"
 
 
+class District(models.Model):
+    """Unique district name used by Members of Parliament."""
+    name = models.CharField(max_length=100, unique=True, db_index=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'District'
+        verbose_name_plural = 'Districts'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        self.name = normalize_district_name(self.name)
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_or_create_named(cls, name: str):
+        normalized = normalize_district_name(name)
+        existing = cls.objects.filter(name__iexact=normalized).first()
+        if existing:
+            if existing.name != normalized:
+                existing.name = normalized
+                existing.save(update_fields=['name'])
+            return existing
+        return cls.objects.create(name=normalized)
+
+
 class MP(models.Model):
     """Model for Members of Parliament"""
     parliament_term = models.ForeignKey(
@@ -107,7 +140,12 @@ class MP(models.Model):
     # Political Information
     party = models.CharField(max_length=100, help_text="Political party affiliation", db_index=True)
     constituency = models.CharField(max_length=200, db_index=True)
-    district = models.CharField(max_length=100, db_index=True)
+    district = models.ForeignKey(
+        District,
+        on_delete=models.PROTECT,
+        related_name='mps',
+        help_text="Select an existing district, or add a new one if it is not listed.",
+    )
 
     # Additional Information
     photo = models.ImageField(upload_to='mps/', blank=True, null=True)

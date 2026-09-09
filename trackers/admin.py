@@ -1,5 +1,6 @@
+from django import forms
 from django.contrib import admin
-from .models import Bill, BillReading, MP, ParliamentTerm, DebtData, Lender, Loan, LoanDocument, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
+from .models import Bill, BillReading, MP, ParliamentTerm, District, DebtData, Lender, Loan, LoanDocument, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
 
 
 @admin.register(ParliamentTerm)
@@ -62,11 +63,47 @@ class BillReadingAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(District)
+class DistrictAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ['name']
+    ordering = ['name']
+
+
+class MPAdminForm(forms.ModelForm):
+    new_district = forms.CharField(
+        required=False,
+        label='New district',
+        help_text="If the MP's district is not listed, type it here to create it.",
+    )
+
+    class Meta:
+        model = MP
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['district'].required = False
+        self.fields['district'].help_text = 'Select an existing district, or enter a new one below.'
+
+    def clean(self):
+        cleaned = super().clean()
+        new_name = (cleaned.get('new_district') or '').strip()
+        district = cleaned.get('district')
+        if new_name:
+            cleaned['district'] = District.get_or_create_named(new_name)
+        elif not district:
+            self.add_error('district', 'Select an existing district or enter a new one.')
+        return cleaned
+
+
 @admin.register(MP)
 class MPAdmin(admin.ModelAdmin):
+    form = MPAdminForm
     list_display = ['name', 'parliament_term', 'party', 'constituency', 'district', 'email', 'phone_no']
     list_filter = ['party', 'district', 'parliament_term']
-    search_fields = ['name', 'first_name', 'last_name', 'constituency', 'district', 'email']
+    search_fields = ['name', 'first_name', 'last_name', 'constituency', 'district__name', 'email']
+    autocomplete_fields = ['district']
     ordering = ['last_name', 'first_name']
 
     fieldsets = (
@@ -77,7 +114,7 @@ class MPAdmin(admin.ModelAdmin):
             'fields': ('first_name', 'middle_name', 'last_name', 'name', 'photo')
         }),
         ('Political Information', {
-            'fields': ('party', 'constituency', 'district')
+            'fields': ('party', 'constituency', 'district', 'new_district')
         }),
         ('Contact Information', {
             'fields': ('phone_no', 'email')

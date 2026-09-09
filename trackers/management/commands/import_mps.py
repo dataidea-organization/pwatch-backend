@@ -1,6 +1,6 @@
 import json
 from django.core.management.base import BaseCommand
-from trackers.models import MP, ParliamentTerm
+from trackers.models import MP, ParliamentTerm, District
 
 
 class Command(BaseCommand):
@@ -82,7 +82,7 @@ class Command(BaseCommand):
                     'name': mp_data.get('name', '').strip(),
                     'party': party,
                     'constituency': mp_data.get('constituency', 'N/A').strip(),
-                    'district': mp_data.get('district', 'N/A').strip(),
+                    'district': District.get_or_create_named(mp_data.get('district', 'N/A')),
                     'phone_no': mp_data.get('phone_no', '').strip(),
                     'email': mp_data.get('email', '').strip(),
                     'bio': mp_data.get('bio'),

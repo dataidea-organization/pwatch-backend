@@ -101,6 +101,7 @@ class BillListSerializer(serializers.ModelSerializer):
 class MPListSerializer(serializers.ModelSerializer):
     """Simplified serializer for MP listing"""
     photo = serializers.SerializerMethodField()
+    district = serializers.CharField(source='district.name', read_only=True)
 
     class Meta:
         model = MP
@@ -128,6 +129,7 @@ class MPDetailSerializer(serializers.ModelSerializer):
     """Full serializer for MP detail view"""
     photo = serializers.SerializerMethodField()
     bio = serializers.SerializerMethodField()
+    district = serializers.CharField(source='district.name', read_only=True)
 
     class Meta:
         model = MP

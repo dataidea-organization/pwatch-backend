@@ -148,8 +148,8 @@ class GlobalSearchView(APIView):
 
     def _search_mps(self, query, limit):
         """Search Members of Parliament"""
-        q = Q(name__icontains=query) | Q(party__icontains=query) | Q(constituency__icontains=query) | Q(district__icontains=query)
-        queryset = MP.objects.filter(q).only(
+        q = Q(name__icontains=query) | Q(party__icontains=query) | Q(constituency__icontains=query) | Q(district__name__icontains=query)
+        queryset = MP.objects.filter(q).select_related('district').only(
             'id', 'name', 'party', 'constituency', 'district', 'photo'
         ).order_by('name')[:limit]
         

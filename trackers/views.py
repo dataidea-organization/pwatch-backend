@@ -5,7 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Prefetch
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
@@ -98,12 +98,12 @@ class MPViewSet(viewsets.ModelViewSet):
     Search by name, constituency, and district
     By default shows only MPs from the current parliament term; use ?parliament_term=<id> for a specific term.
     """
-    queryset = MP.objects.all()
+    queryset = MP.objects.select_related('district', 'parliament_term')
     pagination_class = MPPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['party', 'district', 'constituency']
-    search_fields = ['name', 'first_name', 'last_name', 'constituency', 'district']
-    ordering_fields = ['name', 'last_name', 'first_name', 'party', 'district', 'constituency', 'created_at']
+    filterset_fields = ['party', 'constituency']
+    search_fields = ['name', 'first_name', 'last_name', 'constituency', 'district__name']
+    ordering_fields = ['name', 'last_name', 'first_name', 'party', 'district__name', 'constituency', 'created_at']
     ordering = ['last_name', 'first_name']
 
     def get_queryset(self):
@@ -136,7 +136,7 @@ class MPViewSet(viewsets.ModelViewSet):
                 # Use case-insensitive matching for districts
                 district_q = Q()
                 for district in districts:
-                    district_q |= Q(district__iexact=district)
+                    district_q |= Q(district__name__iexact=district)
                 qs = qs.filter(district_q)
 
         return qs
@@ -154,7 +154,7 @@ class MPViewSet(viewsets.ModelViewSet):
 
         total_mps = queryset.count()
         total_parties = queryset.values('party').distinct().count()
-        total_districts = queryset.values('district').distinct().count()
+        total_districts = queryset.values('district_id').distinct().count()
 
         # Get party distribution
         parties = queryset.values('party').annotate(
@@ -327,7 +327,10 @@ class CommitteeViewSet(viewsets.ModelViewSet):
 
     Provides committee information including chairperson, deputy, members, and documents
     """
-    queryset = Committee.objects.prefetch_related('members', 'documents')
+    queryset = Committee.objects.prefetch_related(
+        Prefetch('members', queryset=MP.objects.select_related('district')),
+        'documents',
+    )
     pagination_class = CommitteePagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'chairperson', 'deputy_chairperson']

@@ -9,27 +9,17 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
-from django.db.models import F
-from .models import News, NewsComment, HotInParliament, HotInParliamentComment
+from .models import News, NewsComment
 from .serializers import (
     NewsListSerializer,
     NewsDetailSerializer,
     HomeNewsSummarySerializer,
-    HotInParliamentSerializer,
     NewsCommentSerializer,
     NewsCommentCreateSerializer,
-    HotInParliamentCommentSerializer,
-    HotInParliamentCommentCreateSerializer,
 )
 
 
 class NewsPagination(PageNumberPagination):
-    page_size = 12
-    page_size_query_param = 'page_size'
-    max_page_size = 100
-
-
-class HotInParliamentPagination(PageNumberPagination):
     page_size = 12
     page_size_query_param = 'page_size'
     max_page_size = 100
@@ -115,102 +105,6 @@ class HomeNewsSummaryView(APIView):
         cache.set(cache_key, data, 600)  # Cache for 10 minutes
         
         return Response(data)
-
-
-# Hot in Parliament endpoint - optimized and cached
-class HotInParliamentView(APIView):
-    """
-    Optimized endpoint for Hot in Parliament items.
-    Returns active items ordered by order and published_date.
-    Cached for 10 minutes to improve performance.
-    Use ?nocache=1 to bypass cache for debugging.
-    """
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        paginator = HotInParliamentPagination()
-        page_number = request.query_params.get('page', '1')
-        page_size = request.query_params.get('page_size', str(paginator.page_size))
-
-        # Allow bypassing cache with ?nocache=1 parameter
-        bypass_cache = request.query_params.get('nocache') == '1'
-        
-        if not bypass_cache:
-            cache_key = f'hot_in_parliament:page={page_number}:page_size={page_size}'
-            cached_data = cache.get(cache_key)
-            
-            if cached_data is not None:
-                return Response(cached_data)
-        
-        # Fetch active hot in parliament items with optimized query
-        hot_items = HotInParliament.objects.filter(
-            is_active=True
-        ).select_related('author').only(
-            'id', 'title', 'slug', 'author', 'content', 'image', 'link_url', 'published_date', 'view_count'
-        ).order_by('order', '-published_date', '-created_at')
-
-        paginated_items = paginator.paginate_queryset(hot_items, request, view=self)
-        serializer = HotInParliamentSerializer(paginated_items, many=True)
-        data = paginator.get_paginated_response(serializer.data).data
-        
-        # Cache the response (unless bypassing)
-        if not bypass_cache:
-            cache.set(cache_key, data, 600)  # Cache for 10 minutes
-        
-        return Response(data)
-
-
-# Hot in Parliament detail endpoint - increments view_count
-class HotInParliamentDetailView(APIView):
-    """
-    Endpoint to retrieve a single Hot in Parliament item by slug.
-    Increments view_count on each request.
-    """
-    permission_classes = [AllowAny]
-
-    def get(self, request, slug):
-        try:
-            hot_item = HotInParliament.objects.get(slug=slug)
-            HotInParliament.objects.filter(pk=hot_item.pk).update(view_count=F('view_count') + 1)
-            hot_item.refresh_from_db()
-            serializer = HotInParliamentSerializer(hot_item)
-            return Response(serializer.data)
-        except HotInParliament.DoesNotExist:
-            return Response(
-                {'error': 'Hot in Parliament item not found'},
-                status=404
-            )
-
-
-# Hot in Parliament comments - no login required
-class HotInParliamentCommentListCreateView(APIView):
-    """
-    List comments for a Latest in Parliament item (GET) or create a comment (POST).
-    No authentication required.
-    """
-    permission_classes = [AllowAny]
-
-    def get(self, request, slug):
-        try:
-            hot_item = HotInParliament.objects.get(slug=slug)
-        except HotInParliament.DoesNotExist:
-            return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
-        comments = HotInParliamentComment.objects.filter(hot_item=hot_item, is_approved=True).order_by('-created_at')
-        serializer = HotInParliamentCommentSerializer(comments, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, slug):
-        try:
-            hot_item = HotInParliament.objects.get(slug=slug)
-        except HotInParliament.DoesNotExist:
-            return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
-        data = {**request.data, 'hot_item': hot_item.id}
-        serializer = HotInParliamentCommentCreateSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            output = HotInParliamentCommentSerializer(serializer.instance)
-            return Response(output.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # News comments - no login required
