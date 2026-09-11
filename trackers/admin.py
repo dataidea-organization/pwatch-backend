@@ -127,10 +127,11 @@ class MPAdmin(admin.ModelAdmin):
 
 @admin.register(DebtData)
 class DebtDataAdmin(admin.ModelAdmin):
-    list_display = ['year', 'national_debt', 'gdp', 'interest', 'total_expenditure']
+    list_display = ['year', 'national_debt', 'gdp', 'interest', 'total_expenditure', 'population']
     list_filter = ['year']
     search_fields = ['year']
     ordering = ['-year']
+    readonly_fields = ['debt_per_citizen', 'gdp_per_capita']
 
     fieldsets = (
         ('Year', {
@@ -140,7 +141,8 @@ class DebtDataAdmin(admin.ModelAdmin):
             'fields': ('national_debt', 'gdp', 'interest', 'total_expenditure')
         }),
         ('Per Capita Metrics (UGX)', {
-            'fields': ('debt_per_citizen', 'gdp_per_capita', 'per_capita_income')
+            'fields': ('debt_per_citizen', 'gdp_per_capita', 'per_capita_income'),
+            'description': 'Debt per citizen and GDP per capita are calculated from the million-UGX totals and population. Enter per capita income in UGX.',
         }),
         ('Population', {
             'fields': ('population',)

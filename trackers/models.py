@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from ckeditor.fields import RichTextField
 
@@ -207,13 +209,13 @@ class DebtData(models.Model):
         max_digits=15,
         decimal_places=2,
         default=0,
-        help_text="Debt per citizen in UGX"
+        help_text="Calculated as national debt (millions UGX) converted to UGX, divided by population"
     )
     gdp_per_capita = models.DecimalField(
         max_digits=15,
         decimal_places=2,
         default=0,
-        help_text="GDP per capita in UGX"
+        help_text="Calculated as GDP (millions UGX) converted to UGX, divided by population"
     )
     per_capita_income = models.DecimalField(
         max_digits=15,
@@ -239,6 +241,14 @@ class DebtData(models.Model):
 
     def __str__(self):
         return f"{self.year} - Debt: UGX {self.national_debt:,.0f}M, GDP: UGX {self.gdp:,.0f}M"
+
+    def save(self, *args, **kwargs):
+        if self.population:
+            million = Decimal('1000000')
+            population = Decimal(self.population)
+            self.debt_per_citizen = (self.national_debt * million / population).quantize(Decimal('0.01'))
+            self.gdp_per_capita = (self.gdp * million / population).quantize(Decimal('0.01'))
+        super().save(*args, **kwargs)
 
 
 class Lender(models.Model):
