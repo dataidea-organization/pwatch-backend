@@ -173,6 +173,7 @@ CKEDITOR_ALLOW_NONIMAGE_FILES = True  # Allow audio/video files
 
 # CORS settings - CorsMiddleware must be as high as possible (see MIDDLEWARE above)
 CORS_ALLOWED_ORIGINS = [
+    "https://pwatch-frontend-hpl6lexd0-cepa.vercel.app/",
     "https://pwatch-backend-production.up.railway.app",
     "https://main.d5as01blzhon4.amplifyapp.com",
     "https://parliamentwatch.ug",
