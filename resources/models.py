@@ -80,7 +80,7 @@ class Publication(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-created_at', '-id']
         verbose_name = 'Publication'
         verbose_name_plural = 'Publications'
 

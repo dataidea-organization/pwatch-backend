@@ -33,12 +33,13 @@ class NewsViewSet(viewsets.ModelViewSet):
     Filters by category and status
     Search by title, author, and content
     """
-    queryset = News.objects.all().order_by('-published_date')
+    queryset = News.objects.all().order_by('-published_date', '-id')
     pagination_class = NewsPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'status', 'author']
     search_fields = ['title', 'author__username', 'author__first_name', 'author__last_name', 'content']
-    ordering_fields = ['published_date', 'created_at', 'title']
+    ordering_fields = ['published_date', 'created_at', 'title', 'id']
+    ordering = ['-published_date', '-id']
     lookup_field = 'slug'
 
     def get_serializer_class(self):
@@ -94,7 +95,7 @@ class HomeNewsSummaryView(APIView):
             status='published'
         ).select_related('author').only(
             'id', 'title', 'slug', 'author', 'category', 'image', 'published_date'
-        ).order_by('-published_date', '-created_at')[:3]
+        ).order_by('-published_date', '-created_at', '-id')[:3]
         
         # Serialize data
         data = {

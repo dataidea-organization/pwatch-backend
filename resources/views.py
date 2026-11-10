@@ -93,8 +93,8 @@ class PublicationViewSet(viewsets.ModelViewSet):
     pagination_class = ResourcePagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'category']
-    ordering_fields = ['created_at', 'date', 'title']
-    ordering = ['-created_at']
+    ordering_fields = ['created_at', 'date', 'title', 'id']
+    ordering = ['-created_at', '-id']
     filterset_fields = ['type', 'category', 'featured']
 
 

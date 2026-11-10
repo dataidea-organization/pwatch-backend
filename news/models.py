@@ -36,7 +36,7 @@ class News(models.Model):
 
     class Meta:
         verbose_name_plural = 'News'
-        ordering = ['-published_date', '-created_at']
+        ordering = ['-published_date', '-created_at', '-id']
 
     def save(self, *args, **kwargs):
         if not self.slug:

@@ -35,7 +35,7 @@ class Blog(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-published_date', '-created_at']
+        ordering = ['-published_date', '-created_at', '-id']
         verbose_name = 'Blog'
         verbose_name_plural = 'Blogs'
 
