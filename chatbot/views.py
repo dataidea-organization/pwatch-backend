@@ -60,7 +60,7 @@ def get_documents_from_media():
                         url = f"http://localhost:8000{settings.MEDIA_URL}{relative_path}"
                     else:
                         # In production, try to get from environment or use default
-                        backend_domain = config('BACKEND_DOMAIN', default='https://pwatch-backend-production.up.railway.app')
+                        backend_domain = config('BACKEND_DOMAIN', default='https://admin.parliamentwatch.ug')
                         url = f"{backend_domain}{settings.MEDIA_URL}{relative_path}"
                 
                 documents.append({

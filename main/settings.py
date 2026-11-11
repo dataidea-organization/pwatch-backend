@@ -148,8 +148,8 @@ MEDIA_URL = '/media/'
 
 # Full media URL for absolute URLs in API responses
 if RAILWAY_ENVIRONMENT_NAME:
-    # Production: Use the Railway backend URL
-    FULL_MEDIA_URL = 'https://pwatch-backend-production.up.railway.app/media/'
+    # Production: public admin/backend host
+    FULL_MEDIA_URL = 'https://admin.parliamentwatch.ug/media/'
 else:
     # Development: Use local backend URL
     FULL_MEDIA_URL = 'http://localhost:8000/media/'
@@ -174,7 +174,7 @@ CKEDITOR_ALLOW_NONIMAGE_FILES = True  # Allow audio/video files
 # CORS settings - CorsMiddleware must be as high as possible (see MIDDLEWARE above)
 CORS_ALLOWED_ORIGINS = [
     "https://pwatch-frontend-hpl6lexd0-cepa.vercel.app",
-    "https://pwatch-backend-production.up.railway.app",
+    "https://admin.parliamentwatch.ug",
     "https://main.d5as01blzhon4.amplifyapp.com",
     "https://parliamentwatch.ug",
     "https://www.parliamentwatch.ug",
@@ -209,7 +209,7 @@ CORS_ALLOW_HEADERS = [
 CORS_EXPOSE_HEADERS = []
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://pwatch-backend-production.up.railway.app",
+    "https://admin.parliamentwatch.ug",
     "https://pwatch-frontend-hpl6lexd0-cepa.vercel.app",
     "https://*.vercel.app",
     "https://main.d5as01blzhon4.amplifyapp.com",

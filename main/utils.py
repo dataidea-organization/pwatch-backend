@@ -37,7 +37,7 @@ def get_full_media_url(relative_url):
         return f"http://localhost:8000{settings.MEDIA_URL}{relative_url}"
     else:
         # In production, try to get from environment or use default
-        backend_domain = config('BACKEND_DOMAIN', default='https://pwatch-backend-production.up.railway.app')
+        backend_domain = config('BACKEND_DOMAIN', default='https://admin.parliamentwatch.ug')
         return f"{backend_domain}{settings.MEDIA_URL}{relative_url}"
 
 
@@ -60,7 +60,7 @@ def process_content_images(html_content):
         if settings.DEBUG:
             full_media_url = f"http://localhost:8000{settings.MEDIA_URL}"
         else:
-            backend_domain = config('BACKEND_DOMAIN', default='https://pwatch-backend-production.up.railway.app')
+            backend_domain = config('BACKEND_DOMAIN', default='https://admin.parliamentwatch.ug')
             full_media_url = f"{backend_domain}{settings.MEDIA_URL}"
     
     full_media_url = full_media_url.rstrip('/')
